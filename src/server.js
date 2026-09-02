@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_super_segura_12345';
 
 const pool = new Pool({ 
@@ -602,11 +602,11 @@ app.get('/api/financial-summary', authenticateToken, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-   const PORT = process.env.PORT || 3000;
+   
    // Configuración del puerto para Render (usamos 'puerto' para evitar conflictos)
-const puerto = process.env.PORT || 3000;
 
-app.listen(puerto, '0.0.0.0', () => {
-    console.log(`🚀 Servidor corriendo en http://0.0.0.0:${puerto}`);
+app.listen(process.env.PORT || 3000, '0.0.0.0', () => {
+    console.log(`🚀 Servidor corriendo en puerto ${process.env.PORT || 3000}`);
     console.log('📊 Dashboard con estadísticas disponible');
 });
+    
