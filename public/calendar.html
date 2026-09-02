@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario - Maestro Hotel OS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 12px;
+            border-radius: 8px; transition: background 0.3s; font-size: 14px;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn, .theme-toggle {
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer;
+        }
+        .container { max-width: 1800px; margin: 30px auto; padding: 0 20px; }
+        
+        .calendar-header {
+            background: white; padding: 20px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 20px;
+        }
+        .month-selector {
+            display: flex; align-items: center; gap: 20px;
+        }
+        .month-selector button {
+            background: #667eea; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: 600;
+        }
+        .month-selector button:hover { background: #5568d3; }
+        .month-selector h2 { font-size: 24px; color: #333; min-width: 250px; text-align: center; }
+        
+        .legend {
+            display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px; font-size: 14px;
+        }
+        .legend-color {
+            width: 25px; height: 25px; border-radius: 4px; border: 1px solid #ccc;
+        }
+        .legend-available { background: #d4edda; }
+        .legend-occupied { background: #f8d7da; }
+        .legend-checkin { background: #cce5ff; }
+        .legend-checkout { background: #fff3cd; }
+        .legend-today { background: #667eea; }
+        
+        .calendar-wrapper {
+            background: white; border-radius: 15px; overflow: auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .calendar-table {
+            width: 100%; border-collapse: collapse; min-width: 1200px;
+        }
+        .calendar-table th {
+            background: #667eea; color: white; padding: 12px 4px;
+            text-align: center; font-size: 12px; font-weight: 600;
+            position: sticky; top: 0; z-index: 10;
+            border: 1px solid #5568d3;
+        }
+        .calendar-table td {
+            padding: 0; text-align: center;
+            border: 1px solid #e0e0e0;
+            height: 70px; width: 45px; min-width: 45px;
+            position: relative; vertical-align: top;
+        }
+        .calendar-table tr:hover { background: transparent; }
+        
+        .room-cell {
+            font-weight: 600; color: #667eea; text-align: left; padding: 10px 15px !important;
+            background: #f8f9fa !important; min-width: 120px; width: 120px;
+            position: sticky; left: 0; z-index: 5;
+            border-right: 2px solid #667eea !important;
+        }
+        
+        .day-cell {
+            width: 100%; height: 100%; padding: 5px 2px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .day-cell:hover { transform: scale(1.05); z-index: 2; }
+        
+        .day-number {
+            font-size: 10px; font-weight: 600; color: #666; margin-bottom: 2px;
+        }
+        
+        .day-available { background: #d4edda; }
+        .day-occupied { background: #f8d7da; }
+        .day-checkin { background: #cce5ff; }
+        .day-checkout { background: #fff3cd; }
+        .day-today { 
+            border: 3px solid #667eea !important;
+            font-weight: bold;
+        }
+        .day-today .day-number { color: #667eea; font-size: 12px; }
+        
+        .day-icon {
+            font-size: 18px; margin: 2px 0;
+        }
+        .day-guest {
+            font-size: 9px; color: #333; font-weight: 600;
+            max-width: 40px; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .stats-bar {
+            background: white; padding: 20px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-top: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 32px; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
+        
+        .weekend { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="guests.html">Huéspedes</a>
+            <a href="reservations.html">Reservas</a>
+            <a href="calendar.html" class="active">Calendario</a>
+            <a href="reports.html">Reportes</a>
+            <a href="invoices.html">Facturación</a>
+            <a href="finance.html">Finanzas</a>
+            <a href="inventory.html">Inventario</a>
+            <a href="housekeeping.html">Housekeeping</a>
+            <a href="users.html">Usuarios</a>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="calendar-header">
+            <div class="month-selector">
+                <button onclick="changeMonth(-1)">← Anterior</button>
+                <h2 id="currentMonth"></h2>
+                <button onclick="changeMonth(1)">Siguiente →</button>
+                <button onclick="goToToday()" style="background:#28a745;">Hoy</button>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color legend-available"></div><span>Disponible</span></div>
+                <div class="legend-item"><div class="legend-color legend-occupied"></div><span>Ocupada</span></div>
+                <div class="legend-item"><div class="legend-color legend-checkin"></div><span>Check-in</span></div>
+                <div class="legend-item"><div class="legend-color legend-checkout"></div><span>Check-out</span></div>
+                <div class="legend-item"><div class="legend-color legend-today"></div><span>Hoy</span></div>
+            </div>
+        </div>
+
+        <div class="calendar-wrapper">
+            <table class="calendar-table" id="calendarTable">
+                <thead id="calendarHead"></thead>
+                <tbody id="calendarBody"></tbody>
+            </table>
+        </div>
+
+        <div class="stats-bar" id="statsBar"></div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        let currentDate = new Date();
+        let rooms = [];
+        let reservations = [];
+
+        async function loadData() {
+            try {
+                const roomsRes = await fetch('http://localhost:3000/api/rooms', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                rooms = await roomsRes.json();
+
+                const reservationsRes = await fetch('http://localhost:3000/api/reservations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                reservations = await reservationsRes.json();
+
+                renderCalendar();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+
+            const thead = document.getElementById('calendarHead');
+            let headerHTML = '<tr><th class="room-cell">Habitación</th>';
+            
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const today = new Date();
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayOfWeek = dayNames[date.getDay()];
+                const isToday = date.toDateString() === today.toDateString();
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                headerHTML += `<th class="${isToday ? 'day-today' : ''} ${isWeekend ? 'weekend' : ''}">${dayOfWeek}<br>${day}</th>`;
+            }
+            headerHTML += '</tr>';
+            thead.innerHTML = headerHTML;
+
+            const tbody = document.getElementById('calendarBody');
+            let bodyHTML = '';
+            
+            rooms.forEach(room => {
+                bodyHTML += `<tr><td class="room-cell">Hab. ${room.room_number}<br><small style="color:#999;">${room.room_type}</small></td>`;
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const isToday = date.toDateString() === today.toDateString();
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                    
+                    const roomReservations = reservations.filter(r => {
+                        const checkIn = new Date(r.check_in_date).toISOString().split('T')[0];
+                        const checkOut = new Date(r.check_out_date).toISOString().split('T')[0];
+                        return r.room_id === room.id && dateStr >= checkIn && dateStr < checkOut;
+                    });
+
+                    let cellClass = 'day-available';
+                    let icon = '';
+                    let guestInfo = '';
+                    
+                    if (roomReservations.length > 0) {
+                        const res = roomReservations[0];
+                        const checkIn = new Date(res.check_in_date).toISOString().split('T')[0];
+                        const checkOut = new Date(res.check_out_date).toISOString().split('T')[0];
+                        
+                        if (dateStr === checkIn) {
+                            cellClass = 'day-checkin';
+                            icon = '🔑';
+                            guestInfo = res.guest_name ? res.guest_name.split(' ')[0] : '';
+                        } else if (dateStr === new Date(new Date(checkOut).getTime() - 86400000).toISOString().split('T')[0]) {
+                            cellClass = 'day-checkout';
+                            icon = '🚪';
+                            guestInfo = res.guest_name ? res.guest_name.split(' ')[0] : '';
+                        } else {
+                            cellClass = 'day-occupied';
+                            icon = '🛏️';
+                            guestInfo = res.guest_name ? res.guest_name.split(' ')[0] : '';
+                        }
+                    } else {
+                        icon = '✅';
+                    }
+
+                    bodyHTML += `<td>
+                        <div class="day-cell ${cellClass} ${isToday ? 'day-today' : ''} ${isWeekend ? 'weekend' : ''}">
+                            <div class="day-number">${day}</div>
+                            <div class="day-icon">${icon}</div>
+                            ${guestInfo ? `<div class="day-guest">${guestInfo}</div>` : ''}
+                        </div>
+                    </td>`;
+                }
+                bodyHTML += '</tr>';
+            });
+            
+            tbody.innerHTML = bodyHTML;
+            calculateStats();
+        }
+
+        function calculateStats() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let totalDays = rooms.length * daysInMonth;
+            let occupiedDays = 0;
+            let totalRevenue = 0;
+
+            rooms.forEach(room => {
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    const res = reservations.find(r => {
+                        const checkIn = new Date(r.check_in_date).toISOString().split('T')[0];
+                        const checkOut = new Date(r.check_out_date).toISOString().split('T')[0];
+                        return r.room_id === room.id && dateStr >= checkIn && dateStr < checkOut;
+                    });
+                    
+                    if (res) {
+                        occupiedDays++;
+                        const nights = Math.max(1, Math.ceil((new Date(res.check_out_date) - new Date(res.check_in_date)) / (1000 * 60 * 60 * 24)));
+                        totalRevenue += parseFloat(res.total_amount) / nights;
+                    }
+                }
+            });
+
+            const occupancyRate = totalDays > 0 ? ((occupiedDays / totalDays) * 100).toFixed(1) : 0;
+
+            document.getElementById('statsBar').innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${rooms.length}</div>
+                    <div class="stat-label">Total Habitaciones</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${occupiedDays}</div>
+                    <div class="stat-label">Días Ocupados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${occupancyRate}%</div>
+                    <div class="stat-label">Tasa de Ocupación</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">$${totalRevenue.toFixed(2)}</div>
+                    <div class="stat-label">Ingresos Estimados</div>
+                </div>
+            `;
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentDate = new Date();
+            renderCalendar();
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            window.addEventListener('load', () => {
+                const btn = document.querySelector('.theme-toggle');
+                if (btn) btn.textContent = '☀️';
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

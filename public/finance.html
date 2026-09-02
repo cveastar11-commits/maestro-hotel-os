@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas - Maestro Hotel OS</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 12px;
+            border-radius: 8px; transition: background 0.3s; font-size: 14px;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn, .theme-toggle {
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer;
+        }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
+        
+        .summary-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .summary-card {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;
+        }
+        .summary-icon { font-size: 40px; margin-bottom: 10px; }
+        .summary-value { font-size: 32px; font-weight: bold; }
+        .summary-value.income { color: #28a745; }
+        .summary-value.expense { color: #dc3545; }
+        .summary-value.balance { color: #667eea; }
+        .summary-label { font-size: 14px; color: #666; margin-top: 5px; }
+
+        .section-title {
+            font-size: 24px; margin: 30px 0 20px; color: #333;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .add-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: 600;
+        }
+        
+        .charts-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;
+        }
+        .chart-card {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .chart-title { font-size: 18px; margin-bottom: 15px; color: #333; }
+        
+        .transactions-table {
+            background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #667eea; color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
+        .type-ingreso { color: #28a745; font-weight: 600; }
+        .type-gasto { color: #dc3545; font-weight: 600; }
+        
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 5% auto; padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 600px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .submit-btn {
+            width: 100%; padding: 12px; background: #667eea; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="guests.html">Huéspedes</a>
+            <a href="reservations.html">Reservas</a>
+            <a href="calendar.html">Calendario</a>
+            <a href="reports.html">Reportes</a>
+            <a href="invoices.html">Facturación</a>
+            <a href="finance.html" class="active">Finanzas</a>
+            <a href="inventory.html">Inventario</a>
+            <a href="housekeeping.html">Housekeeping</a>
+            <a href="users.html">Usuarios</a>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 style="margin-bottom: 30px;">💰 Control Financiero</h2>
+        
+        <div class="summary-grid" id="summaryGrid"></div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">Ingresos por Categoría</div>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Métodos de Pago</div>
+                <canvas id="methodChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span>📋 Historial de Transacciones</span>
+            <button class="add-btn" onclick="openModal()">+ Nueva Transacción</button>
+        </div>
+        
+        <div class="transactions-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Método</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                    <tr><td colspan="6">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nueva Transacción</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="transactionForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="type" required>
+                            <option value="ingreso">💰 Ingreso</option>
+                            <option value="gasto">💸 Gasto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="category" required>
+                            <option value="reservas">Reservas</option>
+                            <option value="facturacion">Facturación</option>
+                            <option value="servicios">Servicios adicionales</option>
+                            <option value="suministros">Suministros</option>
+                            <option value="mantenimiento">Mantenimiento</option>
+                            <option value="servicios-basicos">Servicios básicos</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" id="description" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Monto ($)</label>
+                        <input type="number" id="amount" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Método de Pago</label>
+                        <select id="paymentMethod">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Referencia (opcional)</label>
+                    <input type="text" id="reference" placeholder="Nº factura, recibo, etc.">
+                </div>
+                <button type="submit" class="submit-btn">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        let categoryChart, methodChart;
+
+        async function loadSummary() {
+            try {
+                const response = await fetch('http://localhost:3000/api/financial-summary', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                document.getElementById('summaryGrid').innerHTML = `
+                    <div class="summary-card">
+                        <div class="summary-icon">💰</div>
+                        <div class="summary-value income">$${data.total_income.toFixed(2)}</div>
+                        <div class="summary-label">Total Ingresos</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">💸</div>
+                        <div class="summary-value expense">$${data.total_expenses.toFixed(2)}</div>
+                        <div class="summary-label">Total Gastos</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">📊</div>
+                        <div class="summary-value balance">$${data.balance.toFixed(2)}</div>
+                        <div class="summary-label">Balance</div>
+                    </div>
+                `;
+
+                renderCharts(data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderCharts(data) {
+            if (categoryChart) categoryChart.destroy();
+            if (methodChart) methodChart.destroy();
+
+            const categoryCtx = document.getElementById('categoryChart');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.by_category.map(c => c.category),
+                    datasets: [{
+                        data: data.by_category.map(c => parseFloat(c.total)),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#28a745', '#ffc107', '#dc3545']
+                    }]
+                }
+            });
+
+            const methodCtx = document.getElementById('methodChart');
+            methodChart = new Chart(methodCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.by_method.map(m => m.payment_method || 'N/A'),
+                    datasets: [{
+                        label: 'Monto ($)',
+                        data: data.by_method.map(m => parseFloat(m.total)),
+                        backgroundColor: '#667eea'
+                    }]
+                }
+            });
+        }
+
+        async function loadTransactions() {
+            try {
+                const response = await fetch('http://localhost:3000/api/transactions', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const transactions = await response.json();
+                const tbody = document.getElementById('transactionsBody');
+                
+                if (transactions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">No hay transacciones registradas</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = transactions.map(t => `
+                    <tr>
+                        <td>${new Date(t.date).toLocaleDateString()}</td>
+                        <td class="type-${t.type}">${t.type === 'ingreso' ? '💰 Ingreso' : '💸 Gasto'}</td>
+                        <td>${t.category}</td>
+                        <td>${t.description}</td>
+                        <td>${t.payment_method || '-'}</td>
+                        <td><strong>$${parseFloat(t.amount).toFixed(2)}</strong></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function openModal() { document.getElementById('transactionModal').style.display = 'block'; }
+        function closeModal() { 
+            document.getElementById('transactionModal').style.display = 'none'; 
+            document.getElementById('transactionForm').reset();
+        }
+
+        document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                type: document.getElementById('type').value,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                payment_method: document.getElementById('paymentMethod').value,
+                reference: document.getElementById('reference').value
+            };
+
+            try {
+                await fetch('http://localhost:3000/api/transactions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                closeModal();
+                loadTransactions();
+                loadSummary();
+            } catch (error) {
+                alert('Error al crear transacción');
+            }
+        });
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            window.addEventListener('load', () => {
+                const btn = document.querySelector('.theme-toggle');
+                if (btn) btn.textContent = '☀️';
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        loadSummary();
+        loadTransactions();
+    </script>
+</body>
+</html>

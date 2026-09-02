@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Housekeeping - Maestro Hotel OS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav { display: flex; gap: 20px; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 16px;
+            border-radius: 8px; transition: background 0.3s;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
+        .section-title {
+            font-size: 28px; margin-bottom: 30px; color: #333;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .add-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;
+        }
+        .add-btn:hover { background: #5568d3; }
+        .tasks-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .task-card {
+            background: white; border-radius: 15px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: transform 0.2s;
+        }
+        .task-card:hover { transform: translateY(-5px); }
+        .task-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px;
+        }
+        .room-number {
+            font-size: 24px; font-weight: bold; color: #667eea;
+        }
+        .priority-badge {
+            padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: 600;
+        }
+        .priority-alta { background: #f8d7da; color: #721c24; }
+        .priority-normal { background: #fff3cd; color: #856404; }
+        .priority-baja { background: #d4edda; color: #155724; }
+        .task-type {
+            font-size: 16px; color: #666; margin-bottom: 10px;
+        }
+        .task-details {
+            margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;
+        }
+        .detail-item {
+            display: flex; justify-content: space-between; margin-bottom: 8px;
+        }
+        .detail-label { color: #999; font-size: 14px; }
+        .detail-value { color: #333; font-weight: 600; font-size: 14px; }
+        .status-badge {
+            display: inline-block; padding: 5px 12px; border-radius: 15px;
+            font-size: 13px; font-weight: 600;
+        }
+        .status-pendiente { background: #fff3cd; color: #856404; }
+        .status-en-proceso { background: #cce5ff; color: #004085; }
+        .status-completada { background: #d4edda; color: #155724; }
+        .task-actions {
+            margin-top: 15px; display: flex; gap: 10px;
+        }
+        .complete-btn {
+            flex: 1; background: #28a745; color: white; border: none;
+            padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;
+        }
+        .complete-btn:hover { background: #218838; }
+        .delete-btn {
+            background: #dc3545; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-weight: 600;
+        }
+        .delete-btn:hover { background: #c82333; }
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 5% auto; padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 600px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
+        }
+        .submit-btn {
+            width: 100%; padding: 12px; background: #667eea; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            font-size: 16px; margin-top: 10px;
+        }
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #999;
+        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="guests.html">Huéspedes</a>
+            <a href="reservations.html">Reservas</a>
+            <a href="reports.html">Reportes</a>
+            <a href="invoices.html">Facturación</a>
+            <a href="inventory.html">Inventario</a>
+            <a href="housekeeping.html" class="active">Housekeeping</a>
+            <a href="users.html">Usuarios</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">
+            <span>🧹 Tareas de Limpieza</span>
+            <button class="add-btn" onclick="openModal()">+ Nueva Tarea</button>
+        </div>
+        
+        <div id="tasksContainer" class="tasks-grid">
+            <div class="empty-state">
+                <div class="empty-state-icon">🧹</div>
+                <p>Cargando tareas...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nueva Tarea de Limpieza</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label>Habitación</label>
+                    <select id="roomSelect" required>
+                        <option value="">Seleccionar habitación...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Tarea</label>
+                    <select id="taskType" required>
+                        <option value="limpieza-general">Limpieza General</option>
+                        <option value="cambio-ropa">Cambio de Ropa</option>
+                        <option value="mantenimiento">Mantenimiento</option>
+                        <option value="inspeccion">Inspección</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Asignar a</label>
+                    <input type="text" id="assignedTo" placeholder="Nombre del empleado" required>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select id="priority" required>
+                        <option value="normal">Normal</option>
+                        <option value="alta">Alta</option>
+                        <option value="baja">Baja</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="notes" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Crear Tarea</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        async function loadRooms() {
+            try {
+                const response = await fetch('http://localhost:3000/api/rooms', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const rooms = await response.json();
+                const select = document.getElementById('roomSelect');
+                select.innerHTML = '<option value="">Seleccionar habitación...</option>' +
+                    rooms.map(r => `<option value="${r.id}">Habitación ${r.room_number}</option>`).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadTasks() {
+            try {
+                const response = await fetch('http://localhost:3000/api/housekeeping', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const tasks = await response.json();
+                const container = document.getElementById('tasksContainer');
+                
+                if (tasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <p>No hay tareas pendientes</p>
+                            <p style="margin-top: 10px; font-size: 14px;">Haz clic en "+ Nueva Tarea" para comenzar</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = tasks.map(task => `
+                    <div class="task-card">
+                        <div class="task-header">
+                            <div class="room-number">Hab. ${task.room_number || 'N/A'}</div>
+                            <span class="priority-badge priority-${task.priority}">${task.priority}</span>
+                        </div>
+                        <div class="task-type">${task.task_type.replace('-', ' ').toUpperCase()}</div>
+                        <div class="task-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Asignado a:</span>
+                                <span class="detail-value">${task.assigned_to || 'Sin asignar'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Estado:</span>
+                                <span class="status-badge status-${task.status}">${task.status}</span>
+                            </div>
+                            ${task.notes ? `<div class="detail-item"><span class="detail-label">Notas:</span><span class="detail-value">${task.notes}</span></div>` : ''}
+                            <div class="detail-item">
+                                <span class="detail-label">Creada:</span>
+                                <span class="detail-value">${new Date(task.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            ${task.status === 'pendiente' ? `<button class="complete-btn" onclick="completeTask('${task.id}')">Marcar Completada</button>` : ''}
+                            <button class="delete-btn" onclick="deleteTask('${task.id}')">Eliminar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function openModal() { 
+            loadRooms();
+            document.getElementById('taskModal').style.display = 'block'; 
+        }
+        
+        function closeModal() { 
+            document.getElementById('taskModal').style.display = 'none'; 
+            document.getElementById('taskForm').reset();
+        }
+
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                room_id: document.getElementById('roomSelect').value,
+                task_type: document.getElementById('taskType').value,
+                assigned_to: document.getElementById('assignedTo').value,
+                priority: document.getElementById('priority').value,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                await fetch('http://localhost:3000/api/housekeeping', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                closeModal();
+                loadTasks();
+            } catch (error) {
+                alert('Error al crear tarea');
+            }
+        });
+
+        async function completeTask(id) {
+            if (!confirm('¿Marcar esta tarea como completada?')) return;
+            try {
+                await fetch(`http://localhost:3000/api/housekeeping/${id}/complete`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadTasks();
+            } catch (error) {
+                alert('Error al completar tarea');
+            }
+        }
+
+        async function deleteTask(id) {
+            if (!confirm('¿Eliminar esta tarea?')) return;
+            try {
+                await fetch(`http://localhost:3000/api/housekeeping/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadTasks();
+            } catch (error) {
+                alert('Error al eliminar tarea');
+            }
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>

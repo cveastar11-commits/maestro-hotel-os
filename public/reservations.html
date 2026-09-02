@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas - Maestro Hotel OS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 24px; }
+        .nav { display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 12px;
+            border-radius: 8px; transition: background 0.3s; font-size: 14px;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn, .theme-toggle {
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer;
+        }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
+        
+        .section-title {
+            font-size: 28px; margin-bottom: 30px; color: #333;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .add-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;
+        }
+        .add-btn:hover { background: #5568d3; }
+
+        .reservations-table {
+            background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #667eea; color: white; padding: 15px; text-align: left;
+            font-weight: 600;
+        }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
+        .delete-btn {
+            background: #dc3545; color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 14px;
+        }
+        .delete-btn:hover { background: #c82333; }
+        .checkin-btn {
+            background: #28a745; color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 5px;
+        }
+        .checkin-btn:hover { background: #218838; }
+        .checkout-btn {
+            background: #ffc107; color: #333; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 5px;
+        }
+        .checkout-btn:hover { background: #e0a800; }
+        .status-badge {
+            display: inline-block; padding: 5px 12px; border-radius: 15px;
+            font-size: 13px; font-weight: 600;
+        }
+        .status-confirmada { background: #d4edda; color: #155724; }
+        .status-checkin { background: #fff3cd; color: #856404; }
+        .status-checkout { background: #f8d7da; color: #721c24; }
+
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 5% auto; padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 600px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .submit-btn {
+            width: 100%; padding: 12px; background: #667eea; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            font-size: 16px; margin-top: 10px;
+        }
+        .total-display {
+            background: #e7f3ff; padding: 15px; border-radius: 8px;
+            margin-top: 15px; text-align: center;
+        }
+        .total-amount { font-size: 24px; font-weight: bold; color: #667eea; }
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #999;
+        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="guests.html">Huéspedes</a>
+            <a href="reservations.html" class="active">Reservas</a>
+            <a href="calendar.html">Calendario</a>
+            <a href="reports.html">Reportes</a>
+            <a href="invoices.html">Facturación</a>
+            <a href="finance.html">Finanzas</a>
+            <a href="inventory.html">Inventario</a>
+            <a href="housekeeping.html">Housekeeping</a>
+            <a href="users.html">Usuarios</a>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">
+            <span>📅 Gestión de Reservas</span>
+            <button class="add-btn" onclick="openModal()">+ Nueva Reserva</button>
+        </div>
+        
+        <div class="reservations-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Huésped</th>
+                        <th>Habitación</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="reservationsTableBody">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <div class="empty-state-icon">📅</div>
+                            <p>Cargando reservas...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="reservationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nueva Reserva</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="reservationForm">
+                <div class="form-group">
+                    <label>Huésped</label>
+                    <select id="guestSelect" required>
+                        <option value="">Seleccionar huésped...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Habitación Disponible</label>
+                    <select id="roomSelect" required onchange="calculateTotal()">
+                        <option value="">Seleccionar habitación...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha de Entrada</label>
+                        <input type="date" id="checkInDate" required onchange="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Salida</label>
+                        <input type="date" id="checkOutDate" required onchange="calculateTotal()">
+                    </div>
+                </div>
+                <div class="total-display">
+                    <div>Total a Pagar:</div>
+                    <div class="total-amount" id="totalAmount">$0.00</div>
+                </div>
+                <button type="submit" class="submit-btn">Confirmar Reserva</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token) window.location.href = 'login.html';
+
+        let guests = [];
+        let rooms = [];
+
+        async function loadGuestsAndRooms() {
+            try {
+                const guestsResponse = await fetch('http://localhost:3000/api/guests', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                guests = await guestsResponse.json();
+
+                const roomsResponse = await fetch('http://localhost:3000/api/rooms', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                rooms = await roomsResponse.json();
+
+                const guestSelect = document.getElementById('guestSelect');
+                guestSelect.innerHTML = '<option value="">Seleccionar huésped...</option>' +
+                    guests.map(g => `<option value="${g.id}">${g.full_name} (${g.document_number})</option>`).join('');
+
+                const roomSelect = document.getElementById('roomSelect');
+                const availableRooms = rooms.filter(r => r.status === 'disponible');
+                roomSelect.innerHTML = '<option value="">Seleccionar habitación...</option>' +
+                    availableRooms.map(r => `<option value="${r.id}" data-price="${r.base_price}">Habitación ${r.room_number} - ${r.room_type} ($${r.base_price}/noche)</option>`).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function calculateTotal() {
+            const roomSelect = document.getElementById('roomSelect');
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+
+            if (roomSelect.value && checkIn && checkOut) {
+                const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+                const pricePerNight = parseFloat(selectedOption.dataset.price);
+                const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+                const total = pricePerNight * nights;
+                document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+            } else {
+                document.getElementById('totalAmount').textContent = '$0.00';
+            }
+        }
+
+        async function loadReservations() {
+            try {
+                const response = await fetch('http://localhost:3000/api/reservations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const reservations = await response.json();
+                const tbody = document.getElementById('reservationsTableBody');
+                
+                if (reservations.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <p>No hay reservas registradas</p>
+                                <p style="margin-top: 10px; font-size: 14px;">Haz clic en "+ Nueva Reserva" para comenzar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = reservations.map(res => `
+                    <tr>
+                        <td><strong>${res.guest_name || 'N/A'}</strong></td>
+                        <td>Habitación ${res.room_number || 'N/A'}</td>
+                        <td>${new Date(res.check_in_date).toLocaleDateString()}</td>
+                        <td>${new Date(res.check_out_date).toLocaleDateString()}</td>
+                        <td><strong>$${parseFloat(res.total_amount).toFixed(2)}</strong></td>
+                        <td><span class="status-badge status-${res.status}">${res.status}</span></td>
+                        <td>
+                            ${res.status === 'confirmada' ? `<button class="checkin-btn" onclick="checkin('${res.id}')">Check-in</button>` : ''}
+                            ${res.status === 'checkin' ? `<button class="checkout-btn" onclick="checkout('${res.id}')">Check-out</button>` : ''}
+                            <button class="delete-btn" onclick="deleteReservation('${res.id}')">Eliminar</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function openModal() { 
+            loadGuestsAndRooms();
+            document.getElementById('reservationModal').style.display = 'block'; 
+        }
+        function closeModal() { 
+            document.getElementById('reservationModal').style.display = 'none'; 
+            document.getElementById('reservationForm').reset();
+            document.getElementById('totalAmount').textContent = '$0.00';
+        }
+
+        document.getElementById('reservationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const roomSelect = document.getElementById('roomSelect');
+            const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+            const pricePerNight = parseFloat(selectedOption.dataset.price);
+            const checkIn = document.getElementById('checkInDate').value;
+            const checkOut = document.getElementById('checkOutDate').value;
+            const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+            const total = pricePerNight * nights;
+
+            const data = {
+                guest_id: document.getElementById('guestSelect').value,
+                room_id: document.getElementById('roomSelect').value,
+                check_in_date: checkIn,
+                check_out_date: checkOut,
+                total_amount: total
+            };
+
+            try {
+                await fetch('http://localhost:3000/api/reservations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                closeModal();
+                loadReservations();
+            } catch (error) {
+                alert('Error al crear reserva');
+            }
+        });
+
+        async function checkin(id) {
+            if (!confirm('¿Realizar check-in?')) return;
+            try {
+                await fetch(`http://localhost:3000/api/reservations/${id}/checkin`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadReservations();
+            } catch (error) {
+                alert('Error al realizar check-in');
+            }
+        }
+
+        async function checkout(id) {
+            if (!confirm('¿Realizar check-out?')) return;
+            try {
+                await fetch(`http://localhost:3000/api/reservations/${id}/checkout`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadReservations();
+            } catch (error) {
+                alert('Error al realizar check-out');
+            }
+        }
+
+        async function deleteReservation(id) {
+            if (!confirm('¿Estás seguro de eliminar esta reserva?')) return;
+            try {
+                await fetch(`http://localhost:3000/api/reservations/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadReservations();
+            } catch (error) {
+                alert('Error al eliminar reserva');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            window.addEventListener('load', () => {
+                const btn = document.querySelector('.theme-toggle');
+                if (btn) btn.textContent = '☀️';
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        loadReservations();
+    </script>
+</body>
+</html>

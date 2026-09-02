@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Maestro Hotel OS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav { display: flex; gap: 20px; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 16px;
+            border-radius: 8px; transition: background 0.3s;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
+        .charts-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px; margin-top: 30px;
+        }
+        .chart-card {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #333;
+        }
+        canvas { max-height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+       <div class="nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="guests.html">Huéspedes</a>
+    <a href="reservations.html">Reservas</a>
+    <a href="reports.html" class="active">Reportes</a>
+    <a href="invoices.html">Facturación</a>
+</div>
+
+    <div class="container">
+        <h2 style="margin-bottom: 30px;">📊 Reportes y Estadísticas</h2>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">Ocupación por Tipo de Habitación</div>
+                <canvas id="roomTypeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Ingresos Mensuales</div>
+                <canvas id="revenueChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Estado de Habitaciones</div>
+                <canvas id="roomStatusChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">Reservas por Mes</div>
+                <canvas id="reservationsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        async function loadReports() {
+            try {
+                const roomsRes = await fetch('http://localhost:3000/api/rooms', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const rooms = await roomsRes.json();
+
+                const reservationsRes = await fetch('http://localhost:3000/api/reservations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const reservations = await reservationsRes.json();
+
+                // Gráfico 1: Ocupación por tipo
+                const roomTypes = {};
+                rooms.forEach(r => {
+                    roomTypes[r.room_type] = (roomTypes[r.room_type] || 0) + 1;
+                });
+                new Chart(document.getElementById('roomTypeChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(roomTypes),
+                        datasets: [{
+                            data: Object.values(roomTypes),
+                            backgroundColor: ['#667eea', '#764ba2', '#f093fb']
+                        }]
+                    }
+                });
+
+                // Gráfico 2: Ingresos mensuales
+                const monthlyRevenue = {};
+                reservations.forEach(r => {
+                    const month = new Date(r.check_in_date).toLocaleString('es', { month: 'short' });
+                    monthlyRevenue[month] = (monthlyRevenue[month] || 0) + parseFloat(r.total_amount);
+                });
+                new Chart(document.getElementById('revenueChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(monthlyRevenue),
+                        datasets: [{
+                            label: 'Ingresos ($)',
+                            data: Object.values(monthlyRevenue),
+                            backgroundColor: '#667eea'
+                        }]
+                    }
+                });
+
+                // Gráfico 3: Estado de habitaciones
+                const statusCount = { disponible: 0, ocupada: 0 };
+                rooms.forEach(r => { statusCount[r.status]++; });
+                new Chart(document.getElementById('roomStatusChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Disponibles', 'Ocupadas'],
+                        datasets: [{
+                            data: [statusCount.disponible, statusCount.ocupada],
+                            backgroundColor: ['#28a745', '#dc3545']
+                        }]
+                    }
+                });
+
+                // Gráfico 4: Reservas por mes
+                const monthlyReservations = {};
+                reservations.forEach(r => {
+                    const month = new Date(r.check_in_date).toLocaleString('es', { month: 'short' });
+                    monthlyReservations[month] = (monthlyReservations[month] || 0) + 1;
+                });
+                new Chart(document.getElementById('reservationsChart'), {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(monthlyReservations),
+                        datasets: [{
+                            label: 'Reservas',
+                            data: Object.values(monthlyReservations),
+                            borderColor: '#667eea',
+                            tension: 0.4
+                        }]
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        loadReports();
+    </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturación - Maestro Hotel OS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav { display: flex; gap: 20px; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 16px;
+            border-radius: 8px; transition: background 0.3s;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
+        .section-title {
+            font-size: 28px; margin-bottom: 30px; color: #333;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .add-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;
+        }
+        .add-btn:hover { background: #5568d3; }
+        .invoices-table {
+            background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #667eea; color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
+        .pdf-btn {
+            background: #dc3545; color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 14px;
+        }
+        .pdf-btn:hover { background: #c82333; }
+        .status-pendiente { background: #fff3cd; color: #856404; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: 600; }
+        .status-pagada { background: #d4edda; color: #155724; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: 600; }
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 10% auto; padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 500px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group select {
+            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
+        }
+        .submit-btn {
+            width: 100%; padding: 12px; background: #667eea; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="guests.html">Huéspedes</a>
+            <a href="reservations.html">Reservas</a>
+            <a href="reports.html">Reportes</a>
+            <a href="invoices.html" class="active">Facturación</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">
+            <span>🧾 Facturación</span>
+            <button class="add-btn" onclick="openModal()">+ Generar Factura</button>
+        </div>
+        
+        <div class="invoices-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nº Factura</th>
+                        <th>Huésped</th>
+                        <th>Habitación</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="invoicesTableBody">
+                    <tr><td colspan="7" class="empty-state">Cargando facturas...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Generar Nueva Factura</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="invoiceForm">
+                <div class="form-group">
+                    <label>Seleccionar Reserva</label>
+                    <select id="reservationSelect" required>
+                        <option value="">Seleccionar reserva...</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">Generar Factura</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        async function loadReservations() {
+            try {
+                const response = await fetch('http://localhost:3000/api/reservations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const reservations = await response.json();
+                const select = document.getElementById('reservationSelect');
+                select.innerHTML = '<option value="">Seleccionar reserva...</option>' +
+                    reservations.map(r => `<option value="${r.id}">${r.guest_name} - Habitación ${r.room_number} (${new Date(r.check_in_date).toLocaleDateString()})</option>`).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadInvoices() {
+            try {
+                const response = await fetch('http://localhost:3000/api/invoices', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const invoices = await response.json();
+                const tbody = document.getElementById('invoicesTableBody');
+                
+                if (invoices.length === 0) {
+                    tbody.innerHTML = `
+                        <tr><td colspan="7" class="empty-state">
+                            <div class="empty-state-icon">🧾</div>
+                            <p>No hay facturas generadas</p>
+                        </td></tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = invoices.map(inv => `
+                    <tr>
+                        <td><strong>${inv.invoice_number}</strong></td>
+                        <td>${inv.guest_name || 'N/A'}</td>
+                        <td>Habitación ${inv.room_number || 'N/A'}</td>
+                        <td>${new Date(inv.issue_date).toLocaleDateString()}</td>
+                        <td><strong>$${parseFloat(inv.total).toFixed(2)}</strong></td>
+                        <td><span class="status-${inv.status}">${inv.status}</span></td>
+                        <td>
+                            <button class="pdf-btn" onclick="downloadPDF('${inv.id}')">📄 Descargar PDF</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function openModal() { 
+            loadReservations();
+            document.getElementById('invoiceModal').style.display = 'block'; 
+        }
+        function closeModal() { 
+            document.getElementById('invoiceModal').style.display = 'none'; 
+        }
+
+        document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch('http://localhost:3000/api/invoices', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ reservation_id: document.getElementById('reservationSelect').value })
+                });
+                if (response.ok) {
+                    closeModal();
+                    loadInvoices();
+                    alert('¡Factura generada exitosamente!');
+                } else {
+                    alert('Error al generar factura');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        });
+
+        function downloadPDF(id) {
+            window.open(`http://localhost:3000/api/invoices/${id}/pdf?token=${token}`, '_blank');
+        }
+
+        loadInvoices();
+    </script>
+</body>
+</html>

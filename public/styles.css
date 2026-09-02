@@ -1,0 +1,105 @@
+/* ==========================================
+   MODO OSCURO - MAESTRO HOTEL OS
+   ========================================== */
+
+body.dark-mode {
+    background: #1a1a2e !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .header {
+    background: linear-gradient(135deg, #4a4a6a 0%, #2a2a4a 100%) !important;
+}
+
+body.dark-mode .container {
+    color: #e0e0e0;
+}
+
+body.dark-mode .stat-card,
+body.dark-mode .room-card,
+body.dark-mode .task-card,
+body.dark-mode .chart-card,
+body.dark-mode .calendar-header,
+body.dark-mode .calendar-grid,
+body.dark-mode .stats-bar {
+    background: #16213e !important;
+    color: #e0e0e0 !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5) !important;
+}
+
+body.dark-mode .users-table,
+body.dark-mode .guests-table,
+body.dark-mode .reservations-table,
+body.dark-mode .inventory-table,
+body.dark-mode .invoices-table {
+    background: #16213e !important;
+}
+
+body.dark-mode table {
+    background: #16213e !important;
+}
+
+body.dark-mode th {
+    background: #4a4a6a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode td {
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #2a2a4a !important;
+}
+
+body.dark-mode tr:hover {
+    background: #1a1a3e !important;
+}
+
+body.dark-mode .modal-content {
+    background: #16213e !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #1a1a2e !important;
+    color: #e0e0e0 !important;
+    border-color: #4a4a6a !important;
+}
+
+body.dark-mode .section-title {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .login-container {
+    background: #16213e !important;
+}
+
+body.dark-mode .login-container h1 {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .info {
+    background: #1a1a3e !important;
+    color: #7eb8ff !important;
+}
+
+body.dark-mode .total-display {
+    background: #1a1a3e !important;
+}
+
+/* Botón de modo oscuro */
+.theme-toggle {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s;
+}
+
+.theme-toggle:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}

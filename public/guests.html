@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 24px; }
+        .nav { display: flex; gap: 20px; }
+        .nav a {
+            color: white; text-decoration: none; padding: 8px 16px;
+            border-radius: 8px; transition: background 0.3s;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn {
+            background: rgba(255,255,255,0.2); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
+        }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        
+        .section-title {
+            font-size: 28px; margin-bottom: 30px; color: #333;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .add-btn {
+            background: #667eea; color: white; border: none; padding: 12px 24px;
+            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;
+        }
+        .add-btn:hover { background: #5568d3; }
+
+        .guests-table {
+            background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #667eea; color: white; padding: 15px; text-align: left;
+            font-weight: 600;
+        }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #f9f9f9; }
+        .delete-btn {
+            background: #dc3545; color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 14px;
+        }
+        .delete-btn:hover { background: #c82333; }
+
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: white; margin: 10% auto; padding: 30px; border-radius: 15px;
+            width: 90%; max-width: 500px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input {
+            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
+        }
+        .submit-btn {
+            width: 100%; padding: 12px; background: #667eea; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #999;
+        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="guests.html" class="active">Huéspedes</a>
+    <a href="reservations.html">Reservas</a>
+    <a href="reports.html">Reportes</a>
+    <a href="invoices.html">Facturación</a>
+</div>
+        <div class="user-info">
+            <span id="userName"></span>
+            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title">
+            <span>👥 Gestión de Huéspedes</span>
+            <button class="add-btn" onclick="openModal()">+ Nuevo Huésped</button>
+        </div>
+        
+        <div class="guests-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Documento</th>
+                        <th>Nombre Completo</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="guestsTableBody">
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <p>Cargando huéspedes...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="guestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Huésped</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="guestForm">
+                <div class="form-group">
+                    <label>Número de Documento</label>
+                    <input type="text" id="documentNumber" required placeholder="Ej: 12345678">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="fullName" required placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="Ej: juan@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" id="phone" placeholder="Ej: +1234567890">
+                </div>
+                <button type="submit" class="submit-btn">Guardar Huésped</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token) window.location.href = 'login.html';
+        document.getElementById('userName').textContent = `👤 ${user.name || 'Usuario'}`;
+
+        async function loadGuests() {
+            try {
+                const response = await fetch('http://localhost:3000/api/guests', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const guests = await response.json();
+                const tbody = document.getElementById('guestsTableBody');
+                
+                if (guests.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <p>No hay huéspedes registrados</p>
+                                <p style="margin-top: 10px; font-size: 14px;">Haz clic en "+ Nuevo Huésped" para comenzar</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = guests.map(guest => `
+                    <tr>
+                        <td><strong>${guest.document_number}</strong></td>
+                        <td>${guest.full_name}</td>
+                        <td>${guest.email || '-'}</td>
+                        <td>${guest.phone || '-'}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteGuest('${guest.id}')">Eliminar</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function openModal() { document.getElementById('guestModal').style.display = 'block'; }
+        function closeModal() { document.getElementById('guestModal').style.display = 'none'; }
+
+        document.getElementById('guestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                document_number: document.getElementById('documentNumber').value,
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+
+            try {
+                await fetch('http://localhost:3000/api/guests', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                closeModal();
+                document.getElementById('guestForm').reset();
+                loadGuests();
+            } catch (error) {
+                alert('Error al crear huésped');
+            }
+        });
+
+        async function deleteGuest(id) {
+            if (!confirm('¿Estás seguro de eliminar este huésped?')) return;
+            
+            try {
+                await fetch(`http://localhost:3000/api/guests/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadGuests();
+            } catch (error) {
+                alert('Error al eliminar huésped');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+                loadGuests();
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            window.addEventListener('load', () => {
+                const btn = document.querySelector('.theme-toggle');
+                if (btn) btn.textContent = '☀️';
+            });
+        }
+    </script>
+    </script>
+</body>
+</html>
