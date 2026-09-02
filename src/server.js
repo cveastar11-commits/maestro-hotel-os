@@ -18,7 +18,10 @@ const pool = new Pool({
 
 app.use(cors());
 app.use(express.json());
-   
+      // Ruta de prueba para verificar que el servidor responde
+   app.get('/api/health', (req, res) => {
+       res.json({ status: 'ok', message: 'El servidor de Maestro Hotel OS está vivo y respondiendo!' });
+   });
    // ... (tu código de middleware)
       app.use(express.static(path.join(__dirname, '..', 'public')));
 
