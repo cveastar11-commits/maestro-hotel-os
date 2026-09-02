@@ -206,12 +206,12 @@
 
         async function loadGuestsAndRooms() {
             try {
-                const guestsResponse = await fetch('http://localhost:3000/api/guests', {
+                const guestsResponse = await fetch('/api/guests', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 guests = await guestsResponse.json();
 
-                const roomsResponse = await fetch('http://localhost:3000/api/rooms', {
+                const roomsResponse = await fetch('/api/rooms', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 rooms = await roomsResponse.json();
@@ -247,7 +247,7 @@
 
         async function loadReservations() {
             try {
-                const response = await fetch('http://localhost:3000/api/reservations', {
+                const response = await fetch('/api/reservations', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const reservations = await response.json();
@@ -316,7 +316,7 @@
             };
 
             try {
-                await fetch('http://localhost:3000/api/reservations', {
+                await fetch('/api/reservations', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -334,7 +334,7 @@
         async function checkin(id) {
             if (!confirm('¿Realizar check-in?')) return;
             try {
-                await fetch(`http://localhost:3000/api/reservations/${id}/checkin`, {
+                await fetch(`/api/reservations/${id}/checkin`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -347,7 +347,7 @@
         async function checkout(id) {
             if (!confirm('¿Realizar check-out?')) return;
             try {
-                await fetch(`http://localhost:3000/api/reservations/${id}/checkout`, {
+                await fetch(`/api/reservations/${id}/checkout`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -360,7 +360,7 @@
         async function deleteReservation(id) {
             if (!confirm('¿Estás seguro de eliminar esta reserva?')) return;
             try {
-                await fetch(`http://localhost:3000/api/reservations/${id}`, {
+                await fetch(`/api/reservations/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

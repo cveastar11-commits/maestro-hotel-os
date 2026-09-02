@@ -164,7 +164,7 @@
 
         async function loadGuests() {
             try {
-                const response = await fetch('http://localhost:3000/api/guests', {
+                const response = await fetch('/api/guests', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const guests = await response.json();
@@ -212,7 +212,7 @@
             };
 
             try {
-                await fetch('http://localhost:3000/api/guests', {
+                await fetch('/api/guests', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -232,7 +232,7 @@
             if (!confirm('¿Estás seguro de eliminar este huésped?')) return;
             
             try {
-                await fetch(`http://localhost:3000/api/guests/${id}`, {
+                await fetch(`/api/guests/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

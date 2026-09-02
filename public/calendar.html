@@ -187,12 +187,12 @@
 
         async function loadData() {
             try {
-                const roomsRes = await fetch('http://localhost:3000/api/rooms', {
+                const roomsRes = await fetch('/api/rooms', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 rooms = await roomsRes.json();
 
-                const reservationsRes = await fetch('http://localhost:3000/api/reservations', {
+                const reservationsRes = await fetch('/api/reservations', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 reservations = await reservationsRes.json();

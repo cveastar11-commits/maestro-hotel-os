@@ -219,7 +219,7 @@
 
         async function loadSummary() {
             try {
-                const response = await fetch('http://localhost:3000/api/financial-summary', {
+                const response = await fetch('/api/financial-summary', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -280,7 +280,7 @@
 
         async function loadTransactions() {
             try {
-                const response = await fetch('http://localhost:3000/api/transactions', {
+                const response = await fetch('/api/transactions', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const transactions = await response.json();
@@ -324,7 +324,7 @@
             };
 
             try {
-                await fetch('http://localhost:3000/api/transactions', {
+                await fetch('/api/transactions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
