@@ -101,13 +101,13 @@
 </head>
 <body>
     <div class="header">
-      <div class="nav">
-       <a href="dashboard.html" class="active">Dashboard</a>
-       <a href="inventory.html" class="menu-inventario">Inventario</a>
-       <a href="accounting.html" class="menu-contabilidad">Contabilidad</a>
-       <a href="reports.html" class="menu-reportes">Reportes</a>
-       <a href="users.html" class="menu-usuarios">Usuarios</a>
-   </div>
+     <div class="nav">
+    <a href="dashboard.html" class="active">Dashboard</a>
+    <a href="inventory.html" class="menu-inventario">Inventario</a>
+    <a href="accounting.html" class="menu-contabilidad">Contabilidad</a>
+    <a href="reports.html" class="menu-reportes">Reportes</a>
+    <a href="users.html" class="menu-usuarios">Usuarios</a>
+</div>
 </div>
         <div class="user-info">
             <span id="userName"></span>
@@ -344,45 +344,54 @@
                if (usuarios) usuarios.style.display = 'none';
            }
        });
-   </script>
    <script>
-       document.addEventListener('DOMContentLoaded', () => {
-           // Leemos los datos del usuario guardados en el login
-           const userData = JSON.parse(localStorage.getItem('user') || '{}');
-           const userRole = userData.role;
-           
-           console.log('🔍 Rol detectado en el sistema:', userRole);
+    document.addEventListener('DOMContentLoaded', () => {
+        // Leer datos del usuario
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const userRole = userData.role;
+        
+        console.log('🔍 Rol detectado:', userRole);
+        console.log('📋 Datos completos del usuario:', userData);
 
-           // Si no hay rol o es admin, no ocultamos nada (ve todo)
-           if (userRole === 'admin' || !userRole) {
-               console.log('✅ Acceso total (Admin o sin rol definido)');
-               return; 
-           }
+        // Si no hay rol definido, asumir admin (por seguridad)
+        if (!userRole || userRole === 'admin') {
+            console.log('✅ Acceso total de Administrador - Mostrando TODO');
+            return; // No ocultamos nada, el admin ve todo
+        }
 
-           // 🛎️ RECEPCIONISTA: Solo ve Dashboard e Inventario
-           if (userRole === 'recepcionista') {
-               console.log('✅ Aplicando permisos de Recepcionista');
-               document.querySelectorAll('.menu-contabilidad, .menu-reportes, .menu-usuarios').forEach(el => {
-                   if (el) el.style.display = 'none';
-               });
-           }
+        // 📒 CONTADOR: Solo ve Dashboard, Contabilidad y Reportes
+        if (userRole === 'contador') {
+            console.log('✅ Aplicando permisos de Contador');
+            document.querySelectorAll('.menu-inventario, .menu-usuarios').forEach(el => {
+                if (el) {
+                    el.style.display = 'none';
+                    console.log('   🚫 Ocultando:', el.textContent);
+                }
+            });
+        }
 
-           // 📒 CONTADOR: Solo ve Dashboard, Contabilidad y Reportes
-           if (userRole === 'contador') {
-               console.log('✅ Aplicando permisos de Contador');
-               document.querySelectorAll('.menu-inventario, .menu-usuarios').forEach(el => {
-                   if (el) el.style.display = 'none';
-               });
-           }
+        // 🛎️ RECEPCIONISTA: Solo ve Dashboard e Inventario
+        if (userRole === 'recepcionista') {
+            console.log('✅ Aplicando permisos de Recepcionista');
+            document.querySelectorAll('.menu-contabilidad, .menu-reportes, .menu-usuarios').forEach(el => {
+                if (el) {
+                    el.style.display = 'none';
+                    console.log('   🚫 Ocultando:', el.textContent);
+                }
+            });
+        }
 
-           // 💼 GERENTE: Ve todo excepto Usuarios (solo lectura en contabilidad)
-           if (userRole === 'gerente') {
-               console.log('✅ Aplicando permisos de Gerente');
-               document.querySelectorAll('.menu-usuarios').forEach(el => {
-                   if (el) el.style.display = 'none';
-               });
-           }
-       });
-   </script>
+        // 💼 GERENTE: Ve todo excepto Usuarios
+        if (userRole === 'gerente') {
+            console.log('✅ Aplicando permisos de Gerente');
+            document.querySelectorAll('.menu-usuarios').forEach(el => {
+                if (el) {
+                    el.style.display = 'none';
+                    console.log('   🚫 Ocultando:', el.textContent);
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
