@@ -53,38 +53,44 @@ app.get('/inventory.html', (req, res) => {
 // ==========================================
 // LOGIN
 // ==========================================
-app.post('/api/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
+   app.post('/api/login', async (req, res) => {
+       try {
+           const { email, password } = req.body;
+           const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+           
+           if (result.rows.length === 0) {
+               return res.status(401).json({ error: 'Credenciales inválidas' });
+           }
+           
+           const user = result.rows[0];
+           const validPassword = await bcrypt.compare(password, user.password_hash);
+           
+           if (!validPassword) {
+               return res.status(401).json({ error: 'Credenciales inválidas' });
+           }
 
-    const user = result.rows[0];
-    const isValid = (password === 'admin123' || user.password_hash === password);
+           // ✅ AQUÍ ESTÁ EL CAMBIO: Incluimos el 'role' en el token y en la respuesta
+           const token = jwt.sign(
+               { id: user.id, email: user.email, role: user.role }, 
+               JWT_SECRET, 
+               { expiresIn: '24h' }
+           );
 
-    if (!isValid) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({ 
-      message: 'Login exitoso', 
-      token, 
-      user: { id: user.id, name: user.full_name, role: user.role } 
-    });
-  } catch (error) {
-    console.error('Error en login:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
+           res.json({ 
+               message: 'Login exitoso',
+               token: token,
+               user: {
+                   id: user.id,
+                   name: user.full_name,
+                   email: user.email,
+                   role: user.role // ✅ Enviamos el rol al frontend
+               }
+           });
+       } catch (error) {
+           console.error('Error en login:', error);
+           res.status(500).json({ error: 'Error en el servidor' });
+       }
+   });
 
 // Middleware de autenticación
 const authenticateToken = (req, res, next) => {

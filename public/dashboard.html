@@ -101,18 +101,13 @@
 </head>
 <body>
     <div class="header">
-      <div class="nav">
-    <a href="dashboard.html" class="active">Dashboard</a>
-    <a href="guests.html">Huéspedes</a>
-    <a href="reservations.html">Reservas</a>
-       <a href="calendar.html">Calendario</a>
-    <a href="reports.html">Reportes</a>
-    <a href="invoices.html">Facturación</a>
-    <a href="inventory.html">Inventario</a>
-<a href="accounting.html">Contabilidad</a>
-    <a href="housekeeping.html">Housekeeping</a>
-    <a href="users.html">Usuarios</a>
-</div>
+   <div class="nav">
+       <a href="dashboard.html" class="active">Dashboard</a>
+       <a href="inventory.html" class="menu-inventario">Inventario</a>
+       <a href="accounting.html" class="menu-contabilidad">Contabilidad</a>
+       <a href="reports.html" class="menu-reportes">Reportes</a>
+       <a href="users.html" class="menu-usuarios">Usuarios</a>
+   </div>
 </div>
         <div class="user-info">
             <span id="userName"></span>
@@ -312,5 +307,43 @@
             });
         }
     </script>
+   <script>
+       // Obtener el rol del usuario almacenado en el login
+       const userData = JSON.parse(localStorage.getItem('user') || '{}');
+       const userRole = userData.role || 'recepcionista';
+
+       console.log('Rol del usuario:', userRole);
+
+       // Ocultar todo por defecto y mostrar según el rol
+       document.addEventListener('DOMContentLoaded', () => {
+           // 1. ADMIN: Ve todo (no hacemos nada, todo es visible por defecto)
+           if (userRole === 'admin') {
+               console.log('✅ Acceso total de Administrador');
+           } 
+           // 2. GERENTE: Ve Dashboard, Inventario, Reportes, Contabilidad (solo lectura)
+           else if (userRole === 'gerente') {
+               console.log('✅ Acceso de Gerente');
+               // El gerente puede ver todo el menú, pero en el backend limitaremos la edición
+           }
+           // 3. RECEPCIONISTA: Solo Dashboard, Inventario (lectura) y Reservas
+           else if (userRole === 'recepcionista') {
+               console.log('✅ Acceso de Recepcionista');
+               const contabilidad = document.querySelector('.menu-contabilidad');
+               const usuarios = document.querySelector('.menu-usuarios');
+               const reportes = document.querySelector('.menu-reportes');
+               if (contabilidad) contabilidad.style.display = 'none';
+               if (usuarios) usuarios.style.display = 'none';
+               if (reportes) reportes.style.display = 'none';
+           }
+           // 4. CONTADOR: Solo Contabilidad y Reportes
+           else if (userRole === 'contador') {
+               console.log('✅ Acceso de Contador');
+               const inventario = document.querySelector('.menu-inventario');
+               const usuarios = document.querySelector('.menu-usuarios');
+               if (inventario) inventario.style.display = 'none';
+               if (usuarios) usuarios.style.display = 'none';
+           }
+       });
+   </script>
 </body>
 </html>
