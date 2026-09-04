@@ -93,3 +93,197 @@
             <table>
                 <thead>
                     <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Stock Mínimo</th>
+                        <th>Costo Unitario</th>
+                        <th>Proveedor</th>
+                        <th>Última Actualización</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTableBody">
+                    <!-- Los productos se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar producto -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nuevo Producto</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="productForm">
+                <input type="hidden" id="productId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre del Producto</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <input type="text" id="category" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" id="quantity" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unidad</label>
+                        <input type="text" id="unit" placeholder="kg, litros, unidades" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Stock Mínimo</label>
+                        <input type="number" id="minStock" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Costo Unitario</label>
+                        <input type="number" id="costPerUnit" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Proveedor</label>
+                    <input type="text" id="supplier" required>
+                </div>
+                <button type="submit" class="submit-btn">Guardar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        
+        // Cargar inventario al iniciar
+        document.addEventListener('DOMContentLoaded', loadInventory);
+
+        async function loadInventory() {
+            try {
+                const response = await fetch('/api/inventory', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const products = await response.json();
+                
+                const tbody = document.getElementById('inventoryTableBody');
+                tbody.innerHTML = '';
+                
+                products.forEach(product => {
+                    const stockClass = product.quantity <= product.min_stock ? 'low-stock' : 'good-stock';
+                    const stockText = product.quantity <= product.min_stock ? 'Stock Bajo' : 'OK';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${product.product_name}</td>
+                            <td>${product.category}</td>
+                            <td>${product.quantity}</td>
+                            <td>${product.unit}</td>
+                            <td>${product.min_stock}</td>
+                            <td>$${parseFloat(product.cost_per_unit).toFixed(2)}</td>
+                            <td>${product.supplier}</td>
+                            <td>${new Date(product.last_updated).toLocaleDateString()}</td>
+                            <td>
+                                <button class="edit-btn" onclick="editProduct(${product.id}, '${product.product_name}', '${product.category}', ${product.quantity}, '${product.unit}', ${product.min_stock}, ${product.cost_per_unit}, '${product.supplier}')">Editar</button>
+                                <button class="delete-btn" onclick="deleteProduct(${product.id})">Eliminar</button>
+                                <span class="${stockClass}">${stockText}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error al cargar inventario:', error);
+                alert('Error al cargar el inventario');
+            }
+        }
+
+        function openModal() {
+            document.getElementById('productModal').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Nuevo Producto';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').style.display = 'none';
+        }
+
+        function editProduct(id, name, category, quantity, unit, minStock, cost, supplier) {
+            document.getElementById('productModal').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Editar Producto';
+            document.getElementById('productId').value = id;
+            document.getElementById('productName').value = name;
+            document.getElementById('category').value = category;
+            document.getElementById('quantity').value = quantity;
+            document.getElementById('unit').value = unit;
+            document.getElementById('minStock').value = minStock;
+            document.getElementById('costPerUnit').value = cost;
+            document.getElementById('supplier').value = supplier;
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('¿Está seguro de eliminar este producto?')) return;
+            
+            try {
+                await fetch(`/api/inventory/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadInventory();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar el producto');
+            }
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('productId').value;
+            const productData = {
+                product_name: document.getElementById('productName').value,
+                category: document.getElementById('category').value,
+                quantity: parseFloat(document.getElementById('quantity').value),
+                unit: document.getElementById('unit').value,
+                min_stock: parseFloat(document.getElementById('minStock').value),
+                cost_per_unit: parseFloat(document.getElementById('costPerUnit').value),
+                supplier: document.getElementById('supplier').value
+            };
+            
+            try {
+                const url = id ? `/api/inventory/${id}` : '/api/inventory';
+                const method = id ? 'PUT' : 'POST';
+                
+                await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(productData)
+                });
+                
+                closeModal();
+                loadInventory();
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar el producto');
+            }
+        });
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('productModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
