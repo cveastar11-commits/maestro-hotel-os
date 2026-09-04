@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Producto</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; padding: 40px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #667eea; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .save-btn { background: #667eea; color: white; }
+        .cancel-btn { background: #ccc; color: #333; margin-left: 10px; }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✏️ Editar Producto</h1>
+        <form id="editForm">
+            <input type="hidden" id="productId">
+            <div class="form-group">
+                <label>Nombre del Producto</label>
+                <input type="text" id="nombreProducto" required>
+            </div>
+            <div class="form-group">
+                <label>Categoría</label>
+                <input type="text" id="categoria" required>
+            </div>
+            <div class="form-group">
+                <label>Cantidad</label>
+                <input type="number" id="cantidad" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Costo Unitario ($)</label>
+                <input type="number" id="costoUnitario" step="0.01" required>
+            </div>
+            <button type="submit" class="btn save-btn">💾 Guardar Cambios</button>
+            <a href="inventory.html" class="btn cancel-btn">Cancelar</a>
+        </form>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/login.html'; }
+
+        // Obtener el ID del producto de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+
+        if (!productId) {
+            alert('No se especificó un producto para editar.');
+            window.location.href = '/inventory.html';
+        }
+
+        // Cargar los datos del producto
+        async function cargarProducto() {
+            try {
+                const resp = await fetch('/api/inventory', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const productos = await resp.json();
+                const p = productos.find(prod => prod.id == productId);
+
+                if (p) {
+                    document.getElementById('productId').value = p.id;
+                    document.getElementById('nombreProducto').value = p.product_name;
+                    document.getElementById('categoria').value = p.category;
+                    document.getElementById('cantidad').value = p.quantity;
+                    document.getElementById('costoUnitario').value = p.cost_per_unit;
+                } else {
+                    alert('Producto no encontrado.');
+                    window.location.href = '/inventory.html';
+                }
+            } catch (e) {
+                alert('Error al cargar el producto.');
+            }
+        }
+
+        // Guardar los cambios
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const datos = {
+                product_name: document.getElementById('nombreProducto').value,
+                category: document.getElementById('categoria').value,
+                quantity: parseFloat(document.getElementById('cantidad').value),
+                unit: 'unidades',
+                min_stock: 0,
+                cost_per_unit: parseFloat(document.getElementById('costoUnitario').value),
+                supplier: 'Proveedor Local'
+            };
+
+            try {
+                await fetch('/api/inventory/' + productId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(datos)
+                });
+                alert('✅ Producto actualizado exitosamente.');
+                window.location.href = '/inventory.html';
+            } catch (e) {
+                alert('Error al guardar los cambios.');
+            }
+        });
+
+        cargarProducto();
+    </script>
+</body>
+</html>
