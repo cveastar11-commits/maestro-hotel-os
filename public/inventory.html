@@ -128,16 +128,25 @@
         }
 
         // FUNCIÓN DE EDICIÓN CON PRUEBA DE VIDA
-        window.editarProducto = async function(id) {
+                window.editarProducto = async function(id) {
+            console.log("🔍 Intentando editar producto ID:", id);
             alert("✅ ¡El botón EDITAR funciona! Intentando cargar el producto ID: " + id);
+            
             try {
+                console.log("📡 Haciendo petición a /api/inventory...");
                 const respuesta = await fetch('/api/inventory', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
+                
+                console.log("📥 Respuesta recibida, status:", respuesta.status);
                 const productos = await respuesta.json();
+                console.log("📦 Productos recibidos:", productos.length);
+                
                 const p = productos.find(prod => prod.id === id);
+                console.log("🔎 Producto encontrado:", p);
 
                 if (p) {
+                    console.log("✅ Abriendo modal y llenando formulario...");
                     document.getElementById('miModal').style.display = 'block';
                     document.getElementById('tituloModal').textContent = 'Editar Producto';
                     document.getElementById('productoId').value = p.id;
@@ -145,9 +154,14 @@
                     document.getElementById('categoria').value = p.category;
                     document.getElementById('cantidad').value = p.quantity;
                     document.getElementById('costoUnitario').value = p.cost_per_unit;
+                    console.log("✅ Formulario llenado correctamente");
+                } else {
+                    console.error("❌ No se encontró el producto con ID:", id);
+                    alert("❌ No se encontró el producto");
                 }
             } catch (error) {
-                alert('Error al cargar los datos');
+                console.error("❌ Error completo:", error);
+                alert('❌ Error al cargar los datos: ' + error.message);
             }
         }
 
