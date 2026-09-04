@@ -111,26 +111,28 @@
             const errorDiv = document.getElementById('error');
 
             try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    window.location.href = 'dashboard.html';
-                } else {
-                    errorDiv.textContent = data.error || 'Error al iniciar sesión';
-                    errorDiv.style.display = 'block';
-                }
-            } catch (error) {
-                errorDiv.textContent = 'Error de conexión con el servidor';
-                errorDiv.style.display = 'block';
-            }
+                const response = await    fetch('/api/login', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ email, password })
+   })
+   .then(res => res.json())
+   .then(data => {
+       if (data.token) {
+           // ✅ GUARDAMOS EL TOKEN Y LOS DATOS DEL USUARIO (INCLUYENDO EL ROL)
+           localStorage.setItem('token', data.token);
+           localStorage.setItem('user', JSON.stringify(data.user)); 
+           
+           // ✅ REDIRECCIÓN AUTOMÁTICA AL DASHBOARD
+           window.location.href = '/dashboard.html';
+       } else {
+           alert(data.error || 'Error al iniciar sesión');
+       }
+   })
+   .catch(err => {
+       console.error(err);
+       alert('Error de conexión con el servidor');
+   });
         });
     </script>
 </body>

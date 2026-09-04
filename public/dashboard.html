@@ -101,7 +101,7 @@
 </head>
 <body>
     <div class="header">
-   <div class="nav">
+      <div class="nav">
        <a href="dashboard.html" class="active">Dashboard</a>
        <a href="inventory.html" class="menu-inventario">Inventario</a>
        <a href="accounting.html" class="menu-contabilidad">Contabilidad</a>
@@ -342,6 +342,45 @@
                const usuarios = document.querySelector('.menu-usuarios');
                if (inventario) inventario.style.display = 'none';
                if (usuarios) usuarios.style.display = 'none';
+           }
+       });
+   </script>
+   <script>
+       document.addEventListener('DOMContentLoaded', () => {
+           // Leemos los datos del usuario guardados en el login
+           const userData = JSON.parse(localStorage.getItem('user') || '{}');
+           const userRole = userData.role;
+           
+           console.log('🔍 Rol detectado en el sistema:', userRole);
+
+           // Si no hay rol o es admin, no ocultamos nada (ve todo)
+           if (userRole === 'admin' || !userRole) {
+               console.log('✅ Acceso total (Admin o sin rol definido)');
+               return; 
+           }
+
+           // 🛎️ RECEPCIONISTA: Solo ve Dashboard e Inventario
+           if (userRole === 'recepcionista') {
+               console.log('✅ Aplicando permisos de Recepcionista');
+               document.querySelectorAll('.menu-contabilidad, .menu-reportes, .menu-usuarios').forEach(el => {
+                   if (el) el.style.display = 'none';
+               });
+           }
+
+           // 📒 CONTADOR: Solo ve Dashboard, Contabilidad y Reportes
+           if (userRole === 'contador') {
+               console.log('✅ Aplicando permisos de Contador');
+               document.querySelectorAll('.menu-inventario, .menu-usuarios').forEach(el => {
+                   if (el) el.style.display = 'none';
+               });
+           }
+
+           // 💼 GERENTE: Ve todo excepto Usuarios (solo lectura en contabilidad)
+           if (userRole === 'gerente') {
+               console.log('✅ Aplicando permisos de Gerente');
+               document.querySelectorAll('.menu-usuarios').forEach(el => {
+                   if (el) el.style.display = 'none';
+               });
            }
        });
    </script>
