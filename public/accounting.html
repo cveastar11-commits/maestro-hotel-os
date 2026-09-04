@@ -7,8 +7,11 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
-        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .nav a { color: white; text-decoration: none; padding: 8px 16px; margin-right: 10px; border-radius: 8px; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: background 0.3s; }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
         .nav a.active { background: rgba(255,255,255,0.3); font-weight: bold; }
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -39,14 +42,17 @@
     <div class="header">
         <h1>🏨 Maestro Hotel OS</h1>
         <div class="nav">
-            <a href="dashboard.html">Dashboard</a>
-            <a href="inventory.html">Inventario</a>
-            <a href="accounting.html" class="active">Contabilidad</a>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="inventory.html">📦 Inventario</a>
+            <a href="accounting.html" class="active">💰 Contabilidad</a>
+            <a href="reports.html">📈 Reportes</a>
+            <a href="users.html">👥 Usuarios</a>
+            <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
 
     <div class="container">
-        <h2 style="margin-bottom: 20px;">📊 Sistema Contable</h2>
+        <h2 style="margin-bottom: 20px;">💰 Sistema Contable</h2>
         
         <div class="tabs">
             <button class="tab active" onclick="mostrarSeccion('plan-cuentas', this)">Plan de Cuentas</button>
@@ -232,7 +238,7 @@
             document.getElementById('modalAsiento').style.display = 'block'; 
             document.getElementById('fechaAsiento').valueAsDate = new Date();
             document.getElementById('detallesAsiento').innerHTML = '';
-            agregarLinea(); agregarLinea(); // Mínimo 2 líneas para partida doble
+            agregarLinea(); agregarLinea();
         }
         function cerrarModalAsiento() { document.getElementById('modalAsiento').style.display = 'none'; document.getElementById('formAsiento').reset(); }
 
@@ -285,7 +291,14 @@
             }
         });
 
-        // Inicializar
+        function cerrarSesion() {
+            if (confirm('¿Está seguro de cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            }
+        }
+
         cargarCuentas();
     </script>
 </body>
