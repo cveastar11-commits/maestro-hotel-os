@@ -18,6 +18,10 @@ const pool = new Pool({
 
 app.use(cors());
 app.use(express.json());
+   // PRUEBA DE VIDA DEL SERVIDOR
+   app.get('/prueba', (req, res) => {
+       res.send('¡EL SERVIDOR DE MAESTRO HOTEL OS ESTÁ VIVO Y RESPONDIENDO!');
+   });
 // ==========================================
 // CONFIGURACIÓN BLINDADA PARA RENDER (LINUX)
 // ==========================================
