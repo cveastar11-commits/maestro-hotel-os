@@ -146,7 +146,7 @@
                 tabla.innerHTML = '';
 
                 if (productos.length === 0) {
-                    tabla.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#999;">No hay productos en el inventario. Haz clic en "+ Nuevo Producto" para agregar uno.</td></tr>';
+                    tabla.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#999;">No hay productos. Haz clic en "+ Nuevo Producto".</td></tr>';
                     return;
                 }
 
@@ -154,6 +154,8 @@
                     const claseStock = p.quantity <= p.min_stock ? 'low-stock' : 'good-stock';
                     const textoStock = p.quantity <= p.min_stock ? '⚠️ Bajo' : '✅ OK';
                     const fila = document.createElement('tr');
+                    
+                    // Aquí guardamos TODOS los datos en el botón de editar de forma segura
                     fila.innerHTML =
                         '<td>' + p.product_name + '</td>' +
                         '<td>' + p.category + '</td>' +
@@ -164,17 +166,26 @@
                         '<td>' + p.supplier + '</td>' +
                         '<td><span class="' + claseStock + '">' + textoStock + '</span></td>' +
                         '<td>' +
-                            '<button class="edit-btn" onclick="editarProducto(' + p.id + ')">Editar</button>' +
+                            '<button class="edit-btn" ' +
+                            'onclick="editarProducto(this)" ' +
+                            'data-id="' + p.id + '" ' +
+                            'data-name="' + p.product_name + '" ' +
+                            'data-category="' + p.category + '" ' +
+                            'data-quantity="' + p.quantity + '" ' +
+                            'data-unit="' + p.unit + '" ' +
+                            'data-minstock="' + p.min_stock + '" ' +
+                            'data-cost="' + p.cost_per_unit + '" ' +
+                            'data-supplier="' + p.supplier + '">' +
+                            'Editar</button>' +
                             '<button class="delete-btn" onclick="eliminarProducto(' + p.id + ')">Eliminar</button>' +
                         '</td>';
                     tabla.appendChild(fila);
                 });
             } catch (error) {
-                alert('Error al cargar el inventario. Verifica tu conexión.');
+                console.error('Error:', error);
+                alert('Error al cargar el inventario.');
             }
         }
-
-        function abrirModal() {
             document.getElementById('miModal').style.display = 'block';
             document.getElementById('tituloModal').textContent = 'Nuevo Producto';
             document.getElementById('formularioProducto').reset();
@@ -185,7 +196,21 @@
             document.getElementById('miModal').style.display = 'none';
         }
 
-        async function editarProducto(id) {
+                function editarProducto(btn) {
+            // Abrir el modal
+            document.getElementById('miModal').style.display = 'block';
+            document.getElementById('tituloModal').textContent = 'Editar Producto';
+            
+            // Leer los datos directamente del botón que fue clickeado (100% seguro)
+            document.getElementById('productoId').value = btn.getAttribute('data-id');
+            document.getElementById('nombreProducto').value = btn.getAttribute('data-name');
+            document.getElementById('categoria').value = btn.getAttribute('data-category');
+            document.getElementById('cantidad').value = btn.getAttribute('data-quantity');
+            document.getElementById('unidad').value = btn.getAttribute('data-unit');
+            document.getElementById('stockMinimo').value = btn.getAttribute('data-minstock');
+            document.getElementById('costoUnitario').value = btn.getAttribute('data-cost');
+            document.getElementById('proveedor').value = btn.getAttribute('data-supplier');
+        } {
             try {
                 const respuesta = await fetch('/api/inventory', {
                     headers: { 'Authorization': 'Bearer ' + token }
