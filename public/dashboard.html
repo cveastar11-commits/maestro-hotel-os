@@ -3,395 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <link rel="stylesheet" href="styles.css">
     <title>Dashboard - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; padding: 20px 40px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header h1 { font-size: 24px; }
-.nav { display: flex; gap: 20px; }
-.nav a {
-    color: white; text-decoration: none; padding: 8px 16px;
-    border-radius: 8px; transition: background 0.3s;
-}
-.nav a:hover { background: rgba(255,255,255,0.2); }
-.nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .logout-btn {
-            background: rgba(255,255,255,0.2); color: white; border: none;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
-        }
-        .logout-btn:hover { background: rgba(255,255,255,0.3); }
-        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
-        
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; margin-bottom: 40px;
-        }
-        .stat-card {
-            background: white; padding: 25px; border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;
-        }
-        .stat-icon { font-size: 40px; margin-bottom: 10px; }
-        .stat-value { font-size: 32px; font-weight: bold; color: #667eea; }
-        .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
-
-        .section-title {
-            font-size: 24px; margin-bottom: 20px; color: #333;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .add-btn {
-            background: #667eea; color: white; border: none; padding: 10px 20px;
-            border-radius: 8px; cursor: pointer; font-weight: 600;
-        }
-        .add-btn:hover { background: #5568d3; }
-
-        .rooms-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-        }
-        .room-card {
-            background: white; border-radius: 15px; padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: transform 0.2s;
-        }
-        .room-card:hover { transform: translateY(-5px); }
-        .room-number { font-size: 32px; font-weight: bold; color: #667eea; margin-bottom: 10px; }
-        .room-type { font-size: 18px; color: #666; margin-bottom: 15px; }
-        .room-details {
-            display: flex; justify-content: space-between; margin-top: 15px;
-            padding-top: 15px; border-top: 1px solid #eee;
-        }
-        .detail-item { text-align: center; }
-        .detail-label { font-size: 12px; color: #999; text-transform: uppercase; }
-        .detail-value { font-size: 18px; font-weight: 600; color: #333; margin-top: 5px; }
-        .status-badge {
-            display: inline-block; padding: 5px 15px; border-radius: 20px;
-            font-size: 14px; font-weight: 600;
-        }
-        .status-disponible { background: #d4edda; color: #155724; }
-        .status-ocupada { background: #f8d7da; color: #721c24; }
-
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background: white; margin: 10% auto; padding: 30px; border-radius: 15px;
-            width: 90%; max-width: 500px;
-        }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
-        }
-        .submit-btn {
-            width: 100%; padding: 12px; background: #667eea; color: white;
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-        }
-    </style>
 </head>
 <body>
     <div class="header">
-     <div class="nav">
-    <a href="dashboard.html" class="active">Dashboard</a>
-    <a href="inventory.html" class="menu-inventario">Inventario</a>
-    <a href="accounting.html" class="menu-contabilidad">Contabilidad</a>
-    <a href="reports.html" class="menu-reportes">Reportes</a>
-    <a href="users.html" class="menu-usuarios">Usuarios</a>
-</div>
-</div>
-        <div class="user-info">
-            <span id="userName"></span>
-   <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
-               <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>        
- <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html" class="active">📊 Dashboard</a>
+            <a href="inventory.html" class="menu-inventario">📦 Inventario</a>
+            <a href="accounting.html" class="menu-contabilidad">💰 Contabilidad</a>
+            <a href="reports.html" class="menu-reportes">📈 Reportes</a>
+            <a href="users.html" class="menu-usuarios">👥 Usuarios</a>
+            <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
 
     <div class="container">
-        <div class="stats-grid" id="statsContainer"></div>
-
-        <div class="section-title">
-            <span>Habitaciones</span>
-            <button class="add-btn" onclick="openModal()">+ Agregar Habitación</button>
-        </div>
-        <div id="roomsContainer" class="rooms-grid"></div>
-    </div>
-
-    <div id="roomModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nueva Habitación</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
+        <h2 style="margin-bottom: 20px;">📊 Panel de Control</h2>
+        
+        <div class="summary-box">
+            <div class="summary-card">
+                <h3>Habitaciones Ocupadas</h3>
+                <div class="amount" id="habitacionesOcupadas">0</div>
             </div>
-            <form id="roomForm">
-                <div class="form-group">
-                    <label>Número de Habitación</label>
-                    <input type="text" id="roomNumber" required>
-                </div>
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="roomType" required>
-                        <option value="single">Single</option>
-                        <option value="double">Double</option>
-                        <option value="suite">Suite</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Capacidad</label>
-                    <input type="number" id="capacity" required min="1">
-                </div>
-                <div class="form-group">
-                    <label>Precio Base ($)</label>
-                    <input type="number" id="basePrice" required min="0" step="0.01">
-                </div>
-                <button type="submit" class="submit-btn">Guardar</button>
-            </form>
+            <div class="summary-card">
+                <h3>Huéspedes Hoy</h3>
+                <div class="amount" id="huespedesHoy">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Ingresos del Mes</h3>
+                <div class="amount" id="ingresosMes" style="color:#28a745;">$0.00</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">👋 Bienvenido, <span id="nombreUsuario">Usuario</span></h3>
+            <p style="color: #666;">Rol: <strong id="rolUsuario">-</strong></p>
+            <p style="color: #666; margin-top: 10px;">Fecha: <strong id="fechaActual">-</strong></p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">⚡ Accesos Rápidos</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="inventory.html" class="btn btn-primary">📦 Ver Inventario</a>
+                <a href="accounting.html" class="btn btn-primary">💰 Contabilidad</a>
+                <a href="reports.html" class="btn btn-primary">📈 Reportes</a>
+            </div>
         </div>
     </div>
 
     <script>
         const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (!token) { window.location.href = '/login.html'; }
 
-        if (!token) window.location.href = 'login.html';
-        document.getElementById('userName').textContent = `👤 ${user.name || 'Usuario'}`;
-
-        async function loadStats() {
-            try {
-                const response = await fetch('/api/stats', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const stats = await response.json();
-                
-                document.getElementById('statsContainer').innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-icon">🏨</div>
-                        <div class="stat-value">${stats.total_rooms}</div>
-                        <div class="stat-label">Total Habitaciones</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">✅</div>
-                        <div class="stat-value">${stats.available_rooms}</div>
-                        <div class="stat-label">Disponibles</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🔒</div>
-                        <div class="stat-value">${stats.occupied_rooms}</div>
-                        <div class="stat-label">Ocupadas</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📅</div>
-                        <div class="stat-value">${stats.total_reservations}</div>
-                        <div class="stat-label">Reservas</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-value">$${stats.total_revenue.toFixed(2)}</div>
-                        <div class="stat-label">Ingresos</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-value">${stats.total_guests}</div>
-                        <div class="stat-label">Huéspedes</div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Error cargando stats:', error);
-            }
-        }
-
-        async function loadRooms() {
-            try {
-                const response = await fetch('/api/rooms', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const rooms = await response.json();
-                const container = document.getElementById('roomsContainer');
-                
-                container.innerHTML = rooms.map(room => `
-                    <div class="room-card">
-                        <div class="room-number">Habitación ${room.room_number}</div>
-                        <div class="room-type">${room.room_type.toUpperCase()}</div>
-                        <div class="room-details">
-                            <div class="detail-item">
-                                <div class="detail-label">Capacidad</div>
-                                <div class="detail-value">${room.capacity} 👥</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Precio</div>
-                                <div class="detail-value">$${room.base_price}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Estado</div>
-                                <div class="status-badge status-${room.status}">${room.status}</div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        function openModal() { document.getElementById('roomModal').style.display = 'block'; }
-        function closeModal() { document.getElementById('roomModal').style.display = 'none'; }
-
-        document.getElementById('roomForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                room_number: document.getElementById('roomNumber').value,
-                room_type: document.getElementById('roomType').value,
-                capacity: parseInt(document.getElementById('capacity').value),
-                base_price: parseFloat(document.getElementById('basePrice').value)
-            };
-
-            try {
-                await fetch('/api/rooms', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                closeModal();
-   function toggleTheme() {
-       document.body.classList.toggle('dark-mode');
-       const isDark = document.body.classList.contains('dark-mode');
-       localStorage.setItem('darkMode', isDark);
-       document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
-   }
-   if (localStorage.getItem('darkMode') === 'true') {
-       document.body.classList.add('dark-mode');
-       window.addEventListener('load', () => {
-           const btn = document.querySelector('.theme-toggle');
-           if (btn) btn.textContent = '☀️';
-       });
-   }
-                loadRooms();
-                loadStats();
-            } catch (error) {
-                alert('Error al crear habitación');
-            }
+        // Mostrar datos del usuario
+        document.getElementById('nombreUsuario').textContent = userData.name || 'Usuario';
+        document.getElementById('rolUsuario').textContent = userData.role || 'recepcionista';
+        document.getElementById('fechaActual').textContent = new Date().toLocaleDateString('es-ES', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-        loadStats();
-        loadRooms();
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
-        }
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark-mode');
-            window.addEventListener('load', () => {
-                const btn = document.querySelector('.theme-toggle');
-                if (btn) btn.textContent = '☀️';
-            });
-        }
-    </script>
-   <script>
-       // Obtener el rol del usuario almacenado en el login
-       const userData = JSON.parse(localStorage.getItem('user') || '{}');
-       const userRole = userData.role || 'recepcionista';
-
-       console.log('Rol del usuario:', userRole);
-
-       // Ocultar todo por defecto y mostrar según el rol
-       document.addEventListener('DOMContentLoaded', () => {
-           // 1. ADMIN: Ve todo (no hacemos nada, todo es visible por defecto)
-           if (userRole === 'admin') {
-               console.log('✅ Acceso total de Administrador');
-           } 
-           // 2. GERENTE: Ve Dashboard, Inventario, Reportes, Contabilidad (solo lectura)
-           else if (userRole === 'gerente') {
-               console.log('✅ Acceso de Gerente');
-               // El gerente puede ver todo el menú, pero en el backend limitaremos la edición
-           }
-           // 3. RECEPCIONISTA: Solo Dashboard, Inventario (lectura) y Reservas
-           else if (userRole === 'recepcionista') {
-               console.log('✅ Acceso de Recepcionista');
-               const contabilidad = document.querySelector('.menu-contabilidad');
-               const usuarios = document.querySelector('.menu-usuarios');
-               const reportes = document.querySelector('.menu-reportes');
-               if (contabilidad) contabilidad.style.display = 'none';
-               if (usuarios) usuarios.style.display = 'none';
-               if (reportes) reportes.style.display = 'none';
-           }
-           // 4. CONTADOR: Solo Contabilidad y Reportes
-           else if (userRole === 'contador') {
-               console.log('✅ Acceso de Contador');
-               const inventario = document.querySelector('.menu-inventario');
-               const usuarios = document.querySelector('.menu-usuarios');
-               if (inventario) inventario.style.display = 'none';
-               if (usuarios) usuarios.style.display = 'none';
-           }
-       });
-   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Leer datos del usuario
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        // Control de permisos según rol
         const userRole = userData.role;
-        
         console.log('🔍 Rol detectado:', userRole);
-        console.log('📋 Datos completos del usuario:', userData);
 
-        // Si no hay rol definido, asumir admin (por seguridad)
         if (!userRole || userRole === 'admin') {
-            console.log('✅ Acceso total de Administrador - Mostrando TODO');
-            return; // No ocultamos nada, el admin ve todo
-        }
-
-        // 📒 CONTADOR: Solo ve Dashboard, Contabilidad y Reportes
-        if (userRole === 'contador') {
-            console.log('✅ Aplicando permisos de Contador');
+            console.log('✅ Acceso total de Administrador');
+        } else if (userRole === 'contador') {
             document.querySelectorAll('.menu-inventario, .menu-usuarios').forEach(el => {
-                if (el) {
-                    el.style.display = 'none';
-                    console.log('   🚫 Ocultando:', el.textContent);
-                }
+                if (el) el.style.display = 'none';
             });
-        }
-
-        // 🛎️ RECEPCIONISTA: Solo ve Dashboard e Inventario
-        if (userRole === 'recepcionista') {
-            console.log('✅ Aplicando permisos de Recepcionista');
+        } else if (userRole === 'recepcionista') {
             document.querySelectorAll('.menu-contabilidad, .menu-reportes, .menu-usuarios').forEach(el => {
-                if (el) {
-                    el.style.display = 'none';
-                    console.log('   🚫 Ocultando:', el.textContent);
-                }
+                if (el) el.style.display = 'none';
+            });
+        } else if (userRole === 'gerente') {
+            document.querySelectorAll('.menu-usuarios').forEach(el => {
+                if (el) el.style.display = 'none';
             });
         }
 
-        // 💼 GERENTE: Ve todo excepto Usuarios
-        if (userRole === 'gerente') {
-            console.log('✅ Aplicando permisos de Gerente');
-            document.querySelectorAll('.menu-usuarios').forEach(el => {
-                if (el) {
-                    el.style.display = 'none';
-                    console.log('   🚫 Ocultando:', el.textContent);
-                }
-            });
+        // Cargar estadísticas básicas
+        async function cargarEstadisticas() {
+            try {
+                // Ingresos del mes
+                const resp = await fetch('/api/income-statement', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await resp.json();
+                document.getElementById('ingresosMes').textContent = '$' + data.totalIncome.toFixed(2);
+            } catch (e) {
+                console.error('Error al cargar estadísticas:', e);
+            }
         }
-    });
-</script>
+
+        function cerrarSesion() {
+            if (confirm('¿Está seguro de cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            }
+        }
+
+        cargarEstadisticas();
+    </script>
 </body>
 </html>
