@@ -2,210 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario - Maestro Hotel OS</title>
+    <title>Inventario - Prueba</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; }
-        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .nav a { color: white; text-decoration: none; padding: 8px 16px; margin-right: 10px; border-radius: 8px; }
-        .nav a.active { background: rgba(255,255,255,0.3); font-weight: bold; }
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        .add-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        th { background: #667eea; color: white; padding: 15px; text-align: left; }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
-        .edit-btn { background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 5px; }
-        .delete-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .submit-btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .close-btn { float: right; font-size: 28px; cursor: pointer; }
+        body { font-family: sans-serif; padding: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #667eea; color: white; }
+        .btn { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .edit { background: #17a2b8; }
+        .delete { background: #dc3545; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏨 Maestro Hotel OS</h1>
-        <div class="nav">
-            <a href="dashboard.html">Dashboard</a>
-            <a href="inventory.html" class="active">Inventario</a>
-        </div>
-    </div>
-
-    <div class="container">
-        <h2>📦 Inventario</h2>
-        <button class="add-btn" onclick="abrirModal()">+ Nuevo Producto</button>
-        <br><br>
-        <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Categoría</th>
-                    <th>Cantidad</th>
-                    <th>Costo Unit.</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaInventario"></tbody>
-        </table>
-    </div>
-
-    <div id="miModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="cerrarModal()">&times;</span>
-            <h2 id="tituloModal">Producto</h2>
-            <form id="formularioProducto">
-                <input type="hidden" id="productoId">
-                <div class="form-group">
-                    <label>Nombre del Producto</label>
-                    <input type="text" id="nombreProducto" required>
-                </div>
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <input type="text" id="categoria" required>
-                </div>
-                <div class="form-group">
-                    <label>Cantidad</label>
-                    <input type="number" id="cantidad" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label>Costo Unitario ($)</label>
-                    <input type="number" id="costoUnitario" step="0.01" required>
-                </div>
-                <button type="submit" class="submit-btn">Guardar</button>
-            </form>
-        </div>
-    </div>
+    <h1>📦 Inventario (Versión de Prueba)</h1>
+    <p>Si ve esta página, el archivo nuevo SÍ se cargó.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tabla">
+            <!-- Aquí se cargarán los productos -->
+        </tbody>
+    </table>
 
     <script>
-        // PRUEBA DE VIDA: Si este mensaje NO aparece, el navegador tiene caché vieja.
-        console.log("✅ El archivo inventory.html nuevo se ha cargado correctamente.");
-
+        console.log("✅ SCRIPT CARGADO CORRECTAMENTE");
+        
         const token = localStorage.getItem('token');
-        if (!token) { window.location.href = '/login.html'; }
+        if (!token) { 
+            alert("No hay sesión. Redirigiendo al login...");
+            window.location.href = '/login.html'; 
+        }
 
-        document.addEventListener('DOMContentLoaded', cargarInventario);
-
-        async function cargarInventario() {
+        async function cargar() {
             try {
-                const respuesta = await fetch('/api/inventory', {
+                const resp = await fetch('/api/inventory', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const productos = await respuesta.json();
-                const tabla = document.getElementById('tablaInventario');
-                tabla.innerHTML = '';
-
-                productos.forEach(function(p) {
+                const productos = await resp.json();
+                const tabla = document.getElementById('tabla');
+                
+                productos.forEach(p => {
                     const fila = document.createElement('tr');
-                    fila.innerHTML = 
-                        '<td>' + p.product_name + '</td>' +
-                        '<td>' + p.category + '</td>' +
-                        '<td>' + p.quantity + ' ' + p.unit + '</td>' +
-                        '<td>$' + parseFloat(p.cost_per_unit).toFixed(2) + '</td>' +
-                        '<td>' +
-                            '<button class="edit-btn" onclick="window.editarProducto(' + p.id + ')">Editar</button>' +
-                            '<button class="delete-btn" onclick="window.eliminarProducto(' + p.id + ')">Eliminar</button>' +
-                        '</td>';
+                    // AQUÍ ESTÁ LA CLAVE: El alert está directamente en el HTML
+                    fila.innerHTML = `
+                        <td>${p.product_name}</td>
+                        <td>${p.quantity}</td>
+                        <td>
+                            <button class="btn edit" onclick="alert('¡ÉXITO! El botón Editar funciona para el producto: ${p.product_name}')">Editar</button>
+                            <button class="btn delete" onclick="alert('¡ÉXITO! El botón Eliminar funciona para el ID: ${p.id}')">Eliminar</button>
+                        </td>
+                    `;
                     tabla.appendChild(fila);
                 });
-            } catch (error) {
-                console.error(error);
-                alert('Error al cargar el inventario');
+            } catch (e) {
+                document.getElementById('tabla').innerHTML = '<tr><td colspan="3">Error al cargar. Verifique que inició sesión.</td></tr>';
             }
         }
 
-        function abrirModal() {
-            document.getElementById('miModal').style.display = 'block';
-            document.getElementById('tituloModal').textContent = 'Nuevo Producto';
-            document.getElementById('formularioProducto').reset();
-            document.getElementById('productoId').value = '';
-        }
-
-        function cerrarModal() {
-            document.getElementById('miModal').style.display = 'none';
-        }
-
-        // FUNCIÓN DE EDICIÓN CON PRUEBA DE VIDA
-                      window.editarProducto = async function(id) {
-            alert("PASO 1: Botón clickeado. ID del producto: " + id);
-            
-            try {
-                alert("PASO 2: Conectando con el servidor...");
-                const respuesta = await fetch('/api/inventory', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                
-                if (!respuesta.ok) {
-                    alert("PASO 3: El servidor rechazó la conexión. Código: " + respuesta.status);
-                    return;
-                }
-                
-                alert("PASO 4: Datos recibidos. Buscando el producto...");
-                const productos = await respuesta.json();
-                
-                // Usamos == en lugar de === por si el ID es texto o número
-                const p = productos.find(prod => prod.id == id); 
-
-                if (p) {
-                    alert("PASO 5: ¡Producto encontrado! Nombre: " + p.product_name);
-                    
-                    document.getElementById('miModal').style.display = 'block';
-                    document.getElementById('tituloModal').textContent = 'Editar Producto';
-                    document.getElementById('productoId').value = p.id;
-                    document.getElementById('nombreProducto').value = p.product_name || '';
-                    document.getElementById('categoria').value = p.category || '';
-                    document.getElementById('cantidad').value = p.quantity || 0;
-                    document.getElementById('costoUnitario').value = p.cost_per_unit || 0;
-                    
-                    alert("PASO 6: ¡Formulario llenado! Mire la pantalla, el modal debe estar abierto.");
-                } else {
-                    alert("PASO 5: No se encontró ningún producto con el ID: " + id);
-                }
-            } catch (error) {
-                alert("ERROR DETECTADO: " + error.message);
-            }
-        }
-        }
-
-        window.eliminarProducto = async function(id) {
-            if (!confirm('¿Eliminar este producto?')) return;
-            await fetch('/api/inventory/' + id, {
-                method: 'DELETE',
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            cargarInventario();
-        }
-
-        document.getElementById('formularioProducto').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('productoId').value;
-            const datos = {
-                product_name: document.getElementById('nombreProducto').value,
-                category: document.getElementById('categoria').value,
-                quantity: parseFloat(document.getElementById('cantidad').value),
-                unit: 'unidades',
-                min_stock: 0,
-                cost_per_unit: parseFloat(document.getElementById('costoUnitario').value),
-                supplier: 'Proveedor Local'
-            };
-
-            const url = id ? '/api/inventory/' + id : '/api/inventory';
-            const metodo = id ? 'PUT' : 'POST';
-            
-            await fetch(url, {
-                method: metodo,
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify(datos)
-            });
-            cerrarModal();
-            cargarInventario();
-        });
-
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('miModal')) cerrarModal();
-        }
+        cargar();
     </script>
 </body>
 </html>
