@@ -634,7 +634,163 @@ app.get('/api/financial-summary', authenticateToken, async (req, res) => {
 });
    
    // Configuración del puerto para Render (usamos 'puerto' para evitar conflictos)
+// ==========================================
+// SISTEMA CONTABLE - ENDPOINTS
+// ==========================================
 
+// 1. Obtener todas las cuentas
+app.get('/api/accounts', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM accounts WHERE is_active = true ORDER BY code');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener cuentas:', error);
+        res.status(500).json({ error: 'Error al obtener cuentas' });
+    }
+});
+
+// 2. Crear nueva cuenta
+app.post('/api/accounts', authenticateToken, async (req, res) => {
+    try {
+        const { code, name, type, description } = req.body;
+        const result = await pool.query(
+            'INSERT INTO accounts (code, name, type, description) VALUES ($1, $2, $3, $4) RETURNING *',
+            [code, name, type, description]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al crear cuenta:', error);
+        res.status(500).json({ error: 'Error al crear cuenta' });
+    }
+});
+
+// 3. Obtener todos los asientos contables
+app.get('/api/journal-entries', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT je.*, 
+                   json_agg(json_build_object(
+                       'id', jed.id,
+                       'account_id', jed.account_id,
+                       'account_code', a.code,
+                       'account_name', a.name,
+                       'description', jed.description,
+                       'debit', jed.debit,
+                       'credit', jed.credit
+                   )) as details
+            FROM journal_entries je
+            LEFT JOIN journal_entry_details jed ON je.id = jed.journal_entry_id
+            LEFT JOIN accounts a ON jed.account_id = a.id
+            GROUP BY je.id
+            ORDER BY je.entry_date DESC, je.id DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener asientos:', error);
+        res.status(500).json({ error: 'Error al obtener asientos' });
+    }
+});
+
+// 4. Crear asiento contable con partida doble (Transacción segura)
+app.post('/api/journal-entries', authenticateToken, async (req, res) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const { entry_date, reference, description, details } = req.body;
+        
+        let totalDebit = 0;
+        let totalCredit = 0;
+        details.forEach(d => {
+            totalDebit += parseFloat(d.debit) || 0;
+            totalCredit += parseFloat(d.credit) || 0;
+        });
+        
+        if (Math.abs(totalDebit - totalCredit) > 0.01) {
+            throw new Error('Los débitos deben ser exactamente iguales a los créditos (Partida Doble)');
+        }
+        
+        const entryResult = await client.query(
+            'INSERT INTO journal_entries (entry_date, reference, description, total_amount, status) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [entry_date, reference, description, totalDebit, 'confirmado']
+        );
+        const entryId = entryResult.rows[0].id;
+        
+        for (const detail of details) {
+            await client.query(
+                'INSERT INTO journal_entry_details (journal_entry_id, account_id, description, debit, credit) VALUES ($1, $2, $3, $4, $5)',
+                [entryId, detail.account_id, detail.description, detail.debit || 0, detail.credit || 0]
+            );
+        }
+        
+        await client.query('COMMIT');
+        res.status(201).json({ id: entryId, message: 'Asiento contable creado exitosamente' });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error al crear asiento:', error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        client.release();
+    }
+});
+
+// 5. Balance de Comprobación
+app.get('/api/trial-balance', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                a.code, a.name, a.type,
+                COALESCE(SUM(jed.debit), 0) as total_debit,
+                COALESCE(SUM(jed.credit), 0) as total_credit,
+                CASE 
+                    WHEN a.type IN ('activo', 'gasto') THEN COALESCE(SUM(jed.debit), 0) - COALESCE(SUM(jed.credit), 0)
+                    ELSE COALESCE(SUM(jed.credit), 0) - COALESCE(SUM(jed.debit), 0)
+                END as balance
+            FROM accounts a
+            LEFT JOIN journal_entry_details jed ON a.id = jed.account_id
+            LEFT JOIN journal_entries je ON jed.journal_entry_id = je.id AND je.status = 'confirmado'
+            WHERE a.is_active = true
+            GROUP BY a.id, a.code, a.name, a.type
+            ORDER BY a.code
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener balance:', error);
+        res.status(500).json({ error: 'Error al obtener balance' });
+    }
+});
+
+// 6. Estado de Resultados
+app.get('/api/income-statement', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                a.type, a.code, a.name,
+                CASE 
+                    WHEN a.type = 'ingreso' THEN COALESCE(SUM(jed.credit), 0) - COALESCE(SUM(jed.debit), 0)
+                    WHEN a.type = 'gasto' THEN COALESCE(SUM(jed.debit), 0) - COALESCE(SUM(jed.credit), 0)
+                    ELSE 0
+                END as amount
+            FROM accounts a
+            LEFT JOIN journal_entry_details jed ON a.id = jed.account_id
+            LEFT JOIN journal_entries je ON jed.journal_entry_id = je.id AND je.status = 'confirmado'
+            WHERE a.is_active = true AND a.type IN ('ingreso', 'gasto')
+            GROUP BY a.id, a.type, a.code, a.name
+            ORDER BY a.type, a.code
+        `);
+        
+        let totalIncome = 0, totalExpenses = 0;
+        result.rows.forEach(row => {
+            if (row.type === 'ingreso') totalIncome += parseFloat(row.amount);
+            if (row.type === 'gasto') totalExpenses += parseFloat(row.amount);
+        });
+        
+        res.json({ details: result.rows, totalIncome, totalExpenses, netIncome: totalIncome - totalExpenses });
+    } catch (error) {
+        console.error('Error al obtener estado de resultados:', error);
+        res.status(500).json({ error: 'Error al obtener estado de resultados' });
+    }
+});
+// ==========================================
 app.listen(process.env.PORT || 3000, '0.0.0.0', () => {
     console.log(`🚀 Servidor corriendo en puerto ${process.env.PORT || 3000}`);
     console.log('📊 Dashboard con estadísticas disponible');

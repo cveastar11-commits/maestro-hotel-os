@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad - Maestro Hotel OS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .nav a { color: white; text-decoration: none; padding: 8px 16px; margin-right: 10px; border-radius: 8px; }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: bold; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 12px 24px; background: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; color: #555; }
+        .tab.active { background: #667eea; color: white; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-right: 5px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f8f9fa; color: #333; padding: 12px; text-align: left; border-bottom: 2px solid #667eea; }
+        td { padding: 12px; border-bottom: 1px solid #eee; color: #555; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+        .form-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: end; margin-bottom: 10px; }
+        .summary-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .summary-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; border-top: 4px solid #667eea; }
+        .summary-card h3 { color: #666; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; }
+        .summary-card .amount { font-size: 32px; font-weight: bold; color: #333; }
+        .hidden { display: none; }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 10px; width: 90%; max-width: 700px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventory.html">Inventario</a>
+            <a href="accounting.html" class="active">Contabilidad</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 style="margin-bottom: 20px;">📊 Sistema Contable</h2>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="mostrarSeccion('plan-cuentas', this)">Plan de Cuentas</button>
+            <button class="tab" onclick="mostrarSeccion('asientos', this)">Asientos Contables</button>
+            <button class="tab" onclick="mostrarSeccion('balance', this)">Balance</button>
+            <button class="tab" onclick="mostrarSeccion('resultados', this)">Estado de Resultados</button>
+        </div>
+
+        <!-- PLAN DE CUENTAS -->
+        <div id="plan-cuentas" class="seccion">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Plan de Cuentas</h3>
+                    <button class="btn btn-primary" onclick="abrirModalCuenta()">+ Nueva Cuenta</button>
+                </div>
+                <table>
+                    <thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Descripción</th></tr></thead>
+                    <tbody id="tablaCuentas"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ASIENTOS CONTABLES -->
+        <div id="asientos" class="seccion hidden">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Asientos Contables</h3>
+                    <button class="btn btn-primary" onclick="abrirModalAsiento()">+ Nuevo Asiento</button>
+                </div>
+                <table>
+                    <thead><tr><th>Fecha</th><th>Referencia</th><th>Descripción</th><th>Monto Total</th><th>Estado</th></tr></thead>
+                    <tbody id="tablaAsientos"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BALANCE -->
+        <div id="balance" class="seccion hidden">
+            <div class="card">
+                <h3>Balance de Comprobación</h3>
+                <table>
+                    <thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th>Débito</th><th>Crédito</th><th>Saldo</th></tr></thead>
+                    <tbody id="tablaBalance"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ESTADO DE RESULTADOS -->
+        <div id="resultados" class="seccion hidden">
+            <div class="summary-box">
+                <div class="summary-card"><h3>Ingresos Totales</h3><div class="amount" id="totalIngresos" style="color:#28a745;">$0.00</div></div>
+                <div class="summary-card"><h3>Gastos Totales</h3><div class="amount" id="totalGastos" style="color:#dc3545;">$0.00</div></div>
+                <div class="summary-card"><h3>Utilidad Neta</h3><div class="amount" id="utilidadNeta" style="color:#667eea;">$0.00</div></div>
+            </div>
+            <div class="card">
+                <h3>Detalle de Ingresos y Gastos</h3>
+                <table>
+                    <thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th>Monto</th></tr></thead>
+                    <tbody id="tablaResultados"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CUENTA -->
+    <div id="modalCuenta" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;">Nueva Cuenta Contable</h3>
+            <form id="formCuenta">
+                <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                    <div class="form-group"><label>Código</label><input type="text" id="codigoCuenta" required></div>
+                    <div class="form-group"><label>Tipo</label>
+                        <select id="tipoCuenta" required>
+                            <option value="activo">Activo</option><option value="pasivo">Pasivo</option>
+                            <option value="patrimonio">Patrimonio</option><option value="ingreso">Ingreso</option>
+                            <option value="gasto">Gasto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label>Nombre</label><input type="text" id="nombreCuenta" required></div>
+                <div class="form-group"><label>Descripción</label><textarea id="descripcionCuenta" rows="2"></textarea></div>
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <button type="button" class="btn btn-danger" onclick="cerrarModalCuenta()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ASIENTO -->
+    <div id="modalAsiento" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;">Nuevo Asiento Contable</h3>
+            <form id="formAsiento">
+                <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                    <div class="form-group"><label>Fecha</label><input type="date" id="fechaAsiento" required></div>
+                    <div class="form-group"><label>Referencia (Opcional)</label><input type="text" id="referenciaAsiento"></div>
+                </div>
+                <div class="form-group"><label>Descripción General</label><textarea id="descripcionAsiento" rows="2" required></textarea></div>
+                <h4 style="margin: 20px 0 10px 0; color: #667eea;">Detalles (Partida Doble)</h4>
+                <div id="detallesAsiento"></div>
+                <button type="button" class="btn btn-primary" onclick="agregarLinea()" style="margin-top:10px;">+ Agregar Línea</button>
+                <br><br>
+                <button type="submit" class="btn btn-success">Guardar Asiento</button>
+                <button type="button" class="btn btn-danger" onclick="cerrarModalAsiento()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/login.html'; }
+
+        let cuentas = [];
+
+        function mostrarSeccion(id, btn) {
+            document.querySelectorAll('.seccion').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.remove('hidden');
+            btn.classList.add('active');
+            
+            if (id === 'plan-cuentas') cargarCuentas();
+            if (id === 'asientos') cargarAsientos();
+            if (id === 'balance') cargarBalance();
+            if (id === 'resultados') cargarResultados();
+        }
+
+        async function cargarCuentas() {
+            const resp = await fetch('/api/accounts', { headers: { 'Authorization': 'Bearer ' + token } });
+            cuentas = await resp.json();
+            document.getElementById('tablaCuentas').innerHTML = cuentas.map(c => `
+                <tr><td><strong>${c.code}</strong></td><td>${c.name}</td><td><span style="background:#eef; padding:4px 8px; border-radius:4px; font-size:12px; text-transform:uppercase;">${c.type}</span></td><td>${c.description || '-'}</td></tr>
+            `).join('');
+        }
+
+        async function cargarAsientos() {
+            const resp = await fetch('/api/journal-entries', { headers: { 'Authorization': 'Bearer ' + token } });
+            const asientos = await resp.json();
+            document.getElementById('tablaAsientos').innerHTML = asientos.map(a => `
+                <tr><td>${new Date(a.entry_date).toLocaleDateString()}</td><td>${a.reference || '-'}</td><td>${a.description}</td><td><strong>$${parseFloat(a.total_amount).toFixed(2)}</strong></td><td><span style="color:green; font-weight:bold;">${a.status}</span></td></tr>
+            `).join('');
+        }
+
+        async function cargarBalance() {
+            const resp = await fetch('/api/trial-balance', { headers: { 'Authorization': 'Bearer ' + token } });
+            const balance = await resp.json();
+            document.getElementById('tablaBalance').innerHTML = balance.map(b => `
+                <tr><td>${b.code}</td><td>${b.name}</td><td>${b.type}</td><td>$${parseFloat(b.total_debit).toFixed(2)}</td><td>$${parseFloat(b.total_credit).toFixed(2)}</td><td><strong>$${parseFloat(b.balance).toFixed(2)}</strong></td></tr>
+            `).join('');
+        }
+
+        async function cargarResultados() {
+            const resp = await fetch('/api/income-statement', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await resp.json();
+            document.getElementById('totalIngresos').textContent = '$' + data.totalIncome.toFixed(2);
+            document.getElementById('totalGastos').textContent = '$' + data.totalExpenses.toFixed(2);
+            document.getElementById('utilidadNeta').textContent = '$' + data.netIncome.toFixed(2);
+            
+            document.getElementById('tablaResultados').innerHTML = data.details.map(d => `
+                <tr><td>${d.code}</td><td>${d.name}</td><td>${d.type}</td><td><strong>$${parseFloat(d.amount).toFixed(2)}</strong></td></tr>
+            `).join('');
+        }
+
+        function abrirModalCuenta() { document.getElementById('modalCuenta').style.display = 'block'; }
+        function cerrarModalCuenta() { document.getElementById('modalCuenta').style.display = 'none'; document.getElementById('formCuenta').reset(); }
+
+        document.getElementById('formCuenta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch('/api/accounts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({
+                    code: document.getElementById('codigoCuenta').value,
+                    name: document.getElementById('nombreCuenta').value,
+                    type: document.getElementById('tipoCuenta').value,
+                    description: document.getElementById('descripcionCuenta').value
+                })
+            });
+            cerrarModalCuenta();
+            cargarCuentas();
+            alert('✅ Cuenta creada exitosamente');
+        });
+
+        function abrirModalAsiento() { 
+            document.getElementById('modalAsiento').style.display = 'block'; 
+            document.getElementById('fechaAsiento').valueAsDate = new Date();
+            document.getElementById('detallesAsiento').innerHTML = '';
+            agregarLinea(); agregarLinea(); // Mínimo 2 líneas para partida doble
+        }
+        function cerrarModalAsiento() { document.getElementById('modalAsiento').style.display = 'none'; document.getElementById('formAsiento').reset(); }
+
+        function agregarLinea() {
+            const div = document.createElement('div');
+            div.className = 'form-row';
+            div.innerHTML = `
+                <select class="cuenta-linea" required>
+                    <option value="">Seleccionar cuenta...</option>
+                    ${cuentas.map(c => `<option value="${c.id}">${c.code} - ${c.name}</option>`).join('')}
+                </select>
+                <input type="number" class="debito-linea" placeholder="Débito" step="0.01" value="0">
+                <input type="number" class="credito-linea" placeholder="Crédito" step="0.01" value="0">
+            `;
+            document.getElementById('detallesAsiento').appendChild(div);
+        }
+
+        document.getElementById('formAsiento').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const detalles = [];
+            document.querySelectorAll('#detallesAsiento .form-row').forEach(row => {
+                detalles.push({
+                    account_id: row.querySelector('.cuenta-linea').value,
+                    debit: parseFloat(row.querySelector('.debito-linea').value) || 0,
+                    credit: parseFloat(row.querySelector('.credito-linea').value) || 0
+                });
+            });
+            
+            try {
+                const resp = await fetch('/api/journal-entries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({
+                        entry_date: document.getElementById('fechaAsiento').value,
+                        reference: document.getElementById('referenciaAsiento').value,
+                        description: document.getElementById('descripcionAsiento').value,
+                        details: detalles
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert('✅ Asiento contable creado exitosamente');
+                    cerrarModalAsiento();
+                    cargarAsientos();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('❌ Error de conexión');
+            }
+        });
+
+        // Inicializar
+        cargarCuentas();
+    </script>
+</body>
+</html>
