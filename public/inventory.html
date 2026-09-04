@@ -70,7 +70,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🏨 Maestro Hotel OS</h1>
+        <h1>🏨 Hotel [TURQUEZA NOME INN]</h1>
         <div class="nav">
             <a href="dashboard.html">Dashboard</a>
             <a href="guests.html">Huéspedes</a>
@@ -180,21 +180,31 @@
                     const stockText = product.quantity <= product.min_stock ? 'Stock Bajo' : 'OK';
                     
                     tbody.innerHTML += `
-                        <tr>
-                            <td>${product.product_name}</td>
-                            <td>${product.category}</td>
-                            <td>${product.quantity}</td>
-                            <td>${product.unit}</td>
-                            <td>${product.min_stock}</td>
-                            <td>$${parseFloat(product.cost_per_unit).toFixed(2)}</td>
-                            <td>${product.supplier}</td>
-                            <td>${new Date(product.last_updated).toLocaleDateString()}</td>
-                            <td>
-                                <button class="edit-btn" onclick="editProduct(${product.id}, '${product.product_name}', '${product.category}', ${product.quantity}, '${product.unit}', ${product.min_stock}, ${product.cost_per_unit}, '${product.supplier}')">Editar</button>
-                                <button class="delete-btn" onclick="deleteProduct(${product.id})">Eliminar</button>
-                                <span class="${stockClass}">${stockText}</span>
-                            </td>
-                        </tr>
+                           tbody.innerHTML += `
+       <tr>
+           <td>${product.product_name}</td>
+           <td>${product.category}</td>
+           <td>${product.quantity}</td>
+           <td>${product.unit}</td>
+           <td>${product.min_stock}</td>
+           <td>$${parseFloat(product.cost_per_unit).toFixed(2)}</td>
+           <td>${product.supplier}</td>
+           <td>${new Date(product.last_updated).toLocaleDateString()}</td>
+           <td>
+               <button class="edit-btn" 
+                   onclick="editProduct(${product.id}, this)" 
+                   data-name="${product.product_name}" 
+                   data-category="${product.category}" 
+                   data-quantity="${product.quantity}" 
+                   data-unit="${product.unit}" 
+                   data-minstock="${product.min_stock}" 
+                   data-cost="${product.cost_per_unit}" 
+                   data-supplier="${product.supplier}">Editar</button>
+               <button class="delete-btn" onclick="deleteProduct(${product.id})">Eliminar</button>
+               <span class="${stockClass}">${stockText}</span>
+           </td>
+       </tr>
+   `;
                     `;
                 });
             } catch (error) {
@@ -214,18 +224,20 @@
             document.getElementById('productModal').style.display = 'none';
         }
 
-        function editProduct(id, name, category, quantity, unit, minStock, cost, supplier) {
-            document.getElementById('productModal').style.display = 'block';
-            document.getElementById('modalTitle').textContent = 'Editar Producto';
-            document.getElementById('productId').value = id;
-            document.getElementById('productName').value = name;
-            document.getElementById('category').value = category;
-            document.getElementById('quantity').value = quantity;
-            document.getElementById('unit').value = unit;
-            document.getElementById('minStock').value = minStock;
-            document.getElementById('costPerUnit').value = cost;
-            document.getElementById('supplier').value = supplier;
-        }
+          function editProduct(id, btn) {
+       document.getElementById('productModal').style.display = 'block';
+       document.getElementById('modalTitle').textContent = 'Editar Producto';
+       document.getElementById('productId').value = id;
+       
+       // Ahora leemos los datos de forma segura desde los atributos del botón
+       document.getElementById('productName').value = btn.dataset.name;
+       document.getElementById('category').value = btn.dataset.category;
+       document.getElementById('quantity').value = btn.dataset.quantity;
+       document.getElementById('unit').value = btn.dataset.unit;
+       document.getElementById('minStock').value = btn.dataset.minstock;
+       document.getElementById('costPerUnit').value = btn.dataset.cost;
+       document.getElementById('supplier').value = btn.dataset.supplier;
+   }
 
         async function deleteProduct(id) {
             if (!confirm('¿Está seguro de eliminar este producto?')) return;
