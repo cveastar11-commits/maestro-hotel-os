@@ -128,41 +128,45 @@
         }
 
         // FUNCIÓN DE EDICIÓN CON PRUEBA DE VIDA
-                window.editarProducto = async function(id) {
-            console.log("🔍 Intentando editar producto ID:", id);
-            alert("✅ ¡El botón EDITAR funciona! Intentando cargar el producto ID: " + id);
+                      window.editarProducto = async function(id) {
+            alert("PASO 1: Botón clickeado. ID del producto: " + id);
             
             try {
-                console.log("📡 Haciendo petición a /api/inventory...");
+                alert("PASO 2: Conectando con el servidor...");
                 const respuesta = await fetch('/api/inventory', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 
-                console.log("📥 Respuesta recibida, status:", respuesta.status);
-                const productos = await respuesta.json();
-                console.log("📦 Productos recibidos:", productos.length);
+                if (!respuesta.ok) {
+                    alert("PASO 3: El servidor rechazó la conexión. Código: " + respuesta.status);
+                    return;
+                }
                 
-                const p = productos.find(prod => prod.id === id);
-                console.log("🔎 Producto encontrado:", p);
+                alert("PASO 4: Datos recibidos. Buscando el producto...");
+                const productos = await respuesta.json();
+                
+                // Usamos == en lugar de === por si el ID es texto o número
+                const p = productos.find(prod => prod.id == id); 
 
                 if (p) {
-                    console.log("✅ Abriendo modal y llenando formulario...");
+                    alert("PASO 5: ¡Producto encontrado! Nombre: " + p.product_name);
+                    
                     document.getElementById('miModal').style.display = 'block';
                     document.getElementById('tituloModal').textContent = 'Editar Producto';
                     document.getElementById('productoId').value = p.id;
-                    document.getElementById('nombreProducto').value = p.product_name;
-                    document.getElementById('categoria').value = p.category;
-                    document.getElementById('cantidad').value = p.quantity;
-                    document.getElementById('costoUnitario').value = p.cost_per_unit;
-                    console.log("✅ Formulario llenado correctamente");
+                    document.getElementById('nombreProducto').value = p.product_name || '';
+                    document.getElementById('categoria').value = p.category || '';
+                    document.getElementById('cantidad').value = p.quantity || 0;
+                    document.getElementById('costoUnitario').value = p.cost_per_unit || 0;
+                    
+                    alert("PASO 6: ¡Formulario llenado! Mire la pantalla, el modal debe estar abierto.");
                 } else {
-                    console.error("❌ No se encontró el producto con ID:", id);
-                    alert("❌ No se encontró el producto");
+                    alert("PASO 5: No se encontró ningún producto con el ID: " + id);
                 }
             } catch (error) {
-                console.error("❌ Error completo:", error);
-                alert('❌ Error al cargar los datos: ' + error.message);
+                alert("ERROR DETECTADO: " + error.message);
             }
+        }
         }
 
         window.eliminarProducto = async function(id) {
