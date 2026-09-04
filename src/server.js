@@ -5,7 +5,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const path = require('path');
 const app = express();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'clave_secreta_super_segura_12345';
@@ -24,8 +24,7 @@ app.use(express.json());
    });
 // ==========================================
 // CONFIGURACIÓN BLINDADA PARA RENDER (LINUX)
-// ==========================================
-const path = require('path');
+// ==========
 const publicDir = path.join(__dirname, '..', 'public');
 
 // Servir archivos estáticos (HTML, CSS, JS del frontend)
