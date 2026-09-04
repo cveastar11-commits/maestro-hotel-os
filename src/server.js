@@ -18,6 +18,28 @@ const pool = new Pool({
 
 app.use(cors());
 app.use(express.json());
+// ==========================================
+// CONFIGURACIÓN BLINDADA PARA RENDER (LINUX)
+// ==========================================
+const path = require('path');
+const publicDir = path.join(__dirname, '..', 'public');
+
+// Servir archivos estáticos (HTML, CSS, JS del frontend)
+app.use(express.static(publicDir));
+
+// Rutas explícitas para el Health Check de Render
+app.get('/', (req, res) => {
+    res.sendFile(path.join(publicDir, 'login.html'));
+});
+
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(publicDir, 'login.html'));
+});
+
+app.get('/inventory.html', (req, res) => {
+    res.sendFile(path.join(publicDir, 'inventory.html'));
+});
+// ==========================================
       // Ruta de prueba para verificar que el servidor responde
    app.get('/api/health', (req, res) => {
        res.json({ status: 'ok', message: 'El servidor de Maestro Hotel OS está vivo y respondiendo!' });
