@@ -2,32 +2,87 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inventario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Maestro Hotel OS</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background: #667eea; color: white; }
-        .btn { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: background 0.3s; }
+        .nav a:hover { background: rgba(255,255,255,0.2); }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: bold; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .add-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-bottom: 20px; }
+        .add-btn:hover { background: #5a6fd6; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th { background: #667eea; color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        .btn { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 5px; }
         .edit { background: #17a2b8; }
         .delete { background: #dc3545; }
-        .add { background: #667eea; margin-bottom: 20px; }
+        .edit:hover { background: #138496; }
+        .delete:hover { background: #c82333; }
     </style>
 </head>
 <body>
-    <h1>📦 Inventario</h1>
-    <a href="new-product.html" class="btn add">+ Nuevo Producto</a>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="tabla"></tbody>
-    </table>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="inventory.html" class="active">📦 Inventario</a>
+            <a href="accounting.html">💰 Contabilidad</a>
+            <a href="reports.html">📈 Reportes</a>
+            <a href="users.html">👥 Usuarios</a>
+            <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 style="margin-bottom: 20px;">📦 Inventario</h2>
+        <button class="add-btn" onclick="abrirModalNuevo()">+ Nuevo Producto</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Costo Unit.</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal para nuevo producto -->
+    <div id="modalNuevo" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+        <div style="background:white; margin:5% auto; padding:30px; border-radius:10px; width:90%; max-width:500px;">
+            <h3 style="margin-bottom:20px;">Nuevo Producto</h3>
+            <form id="formNuevo">
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Nombre</label>
+                    <input type="text" id="nuevoNombre" required style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:6px;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Categoría</label>
+                    <input type="text" id="nuevoCategoria" required style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:6px;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Cantidad</label>
+                    <input type="number" id="nuevoCantidad" step="0.01" required style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:6px;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:bold;">Costo Unitario</label>
+                    <input type="number" id="nuevoCosto" step="0.01" required style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:6px;">
+                </div>
+                <button type="submit" style="width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px;">Guardar</button>
+                <button type="button" onclick="cerrarModalNuevo()" style="width:100%; padding:12px; background:#ccc; color:#333; border:none; border-radius:8px; cursor:pointer; margin-top:10px;">Cancelar</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         const token = localStorage.getItem('token');
@@ -41,11 +96,19 @@
                 const productos = await resp.json();
                 const tabla = document.getElementById('tabla');
                 
+                if (productos.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:#999;">No hay productos. Haga clic en "+ Nuevo Producto".</td></tr>';
+                    return;
+                }
+                
+                tabla.innerHTML = '';
                 productos.forEach(p => {
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
                         <td>${p.product_name}</td>
-                        <td>${p.quantity}</td>
+                        <td>${p.category}</td>
+                        <td>${p.quantity} ${p.unit}</td>
+                        <td>$${parseFloat(p.cost_per_unit).toFixed(2)}</td>
                         <td>
                             <a href="edit-product.html?id=${p.id}" class="btn edit">Editar</a>
                             <button class="btn delete" onclick="eliminar(${p.id})">Eliminar</button>
@@ -54,14 +117,64 @@
                     tabla.appendChild(fila);
                 });
             } catch (e) {
-                document.getElementById('tabla').innerHTML = '<tr><td colspan="3">Error al cargar</td></tr>';
+                alert('Error al cargar el inventario');
             }
         }
 
         async function eliminar(id) {
             if (!confirm('¿Eliminar este producto?')) return;
-            await fetch('/api/inventory/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
-            cargar();
+            try {
+                await fetch('/api/inventory/' + id, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': 'Bearer ' + token } 
+                });
+                cargar();
+            } catch (e) {
+                alert('Error al eliminar');
+            }
+        }
+
+        function abrirModalNuevo() {
+            document.getElementById('modalNuevo').style.display = 'block';
+        }
+
+        function cerrarModalNuevo() {
+            document.getElementById('modalNuevo').style.display = 'none';
+            document.getElementById('formNuevo').reset();
+        }
+
+        document.getElementById('formNuevo').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const datos = {
+                product_name: document.getElementById('nuevoNombre').value,
+                category: document.getElementById('nuevoCategoria').value,
+                quantity: parseFloat(document.getElementById('nuevoCantidad').value),
+                unit: 'unidades',
+                min_stock: 0,
+                cost_per_unit: parseFloat(document.getElementById('nuevoCosto').value),
+                supplier: 'Proveedor Local'
+            };
+
+            try {
+                await fetch('/api/inventory', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(datos)
+                });
+                cerrarModalNuevo();
+                cargar();
+                alert('✅ Producto agregado exitosamente');
+            } catch (e) {
+                alert('Error al guardar');
+            }
+        });
+
+        function cerrarSesion() {
+            if (confirm('¿Está seguro de cerrar sesión?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            }
         }
 
         cargar();
