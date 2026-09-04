@@ -5,38 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario - Maestro Hotel OS</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .nav { display: flex; gap: 20px; }
-        .nav a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: background 0.3s; }
-        .nav a:hover { background: rgba(255,255,255,0.2); }
-        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
-        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
-        .section-title { font-size: 28px; margin-bottom: 30px; color: #333; display: flex; justify-content: space-between; align-items: center; }
-        .add-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; }
-        .add-btn:hover { background: #5a6fd6; }
-        .inventory-table { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .nav a { color: white; text-decoration: none; padding: 8px 16px; margin-right: 10px; border-radius: 8px; }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: bold; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .add-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         th { background: #667eea; color: white; padding: 15px; text-align: left; }
         td { padding: 15px; border-bottom: 1px solid #eee; }
-        tr:hover { background: #f9f9f9; }
-        .low-stock { background: #f8d7da; color: #721c24; padding: 5px 12px; border-radius: 15px; font-weight: 600; font-size: 12px; }
-        .good-stock { background: #d4edda; color: #155724; padding: 5px 12px; border-radius: 15px; font-weight: 600; font-size: 12px; }
         .edit-btn { background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 5px; }
         .delete-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 600px; position: relative; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h2 { color: #333; }
-        .close-btn { font-size: 32px; font-weight: bold; cursor: pointer; color: #999; background: none; border: none; }
-        .close-btn:hover { color: #333; }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .submit-btn { width: 100%; padding: 14px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .submit-btn:hover { background: #5a6fd6; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .close-btn { float: right; font-size: 28px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -44,95 +30,61 @@
         <h1>🏨 Maestro Hotel OS</h1>
         <div class="nav">
             <a href="dashboard.html">Dashboard</a>
-            <a href="guests.html">Huéspedes</a>
-            <a href="reservations.html">Reservas</a>
-            <a href="reports.html">Reportes</a>
-            <a href="invoices.html">Facturación</a>
             <a href="inventory.html" class="active">Inventario</a>
-            <a href="housekeeping.html">Housekeeping</a>
-            <a href="users.html">Usuarios</a>
         </div>
     </div>
 
     <div class="container">
-        <div class="section-title">
-            <span>📦 Inventario</span>
-            <button class="add-btn" onclick="abrirModal()">+ Nuevo Producto</button>
-        </div>
-
-        <div class="inventory-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Cantidad</th>
-                        <th>Unidad</th>
-                        <th>Stock Mín</th>
-                        <th>Costo Unit.</th>
-                        <th>Proveedor</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaInventario"></tbody>
-            </table>
-        </div>
+        <h2>📦 Inventario</h2>
+        <button class="add-btn" onclick="abrirModal()">+ Nuevo Producto</button>
+        <br><br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Costo Unit.</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaInventario"></tbody>
+        </table>
     </div>
 
     <div id="miModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="tituloModal">Nuevo Producto</h2>
-                <button class="close-btn" onclick="cerrarModal()">&times;</button>
-            </div>
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <h2 id="tituloModal">Producto</h2>
             <form id="formularioProducto">
                 <input type="hidden" id="productoId">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nombre del Producto</label>
-                        <input type="text" id="nombreProducto" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <input type="text" id="categoria" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Cantidad</label>
-                        <input type="number" id="cantidad" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Unidad</label>
-                        <input type="text" id="unidad" placeholder="kg, litros, unidades" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Stock Mínimo</label>
-                        <input type="number" id="stockMinimo" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Costo Unitario ($)</label>
-                        <input type="number" id="costoUnitario" step="0.01" required>
-                    </div>
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="nombreProducto" required>
                 </div>
                 <div class="form-group">
-                    <label>Proveedor</label>
-                    <input type="text" id="proveedor" required>
+                    <label>Categoría</label>
+                    <input type="text" id="categoria" required>
                 </div>
-                <button type="submit" class="submit-btn">💾 Guardar Producto</button>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="cantidad" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Costo Unitario ($)</label>
+                    <input type="number" id="costoUnitario" step="0.01" required>
+                </div>
+                <button type="submit" class="submit-btn">Guardar</button>
             </form>
         </div>
     </div>
 
     <script>
-        const token = localStorage.getItem('token');
+        // PRUEBA DE VIDA: Si este mensaje NO aparece, el navegador tiene caché vieja.
+        console.log("✅ El archivo inventory.html nuevo se ha cargado correctamente.");
 
-        if (!token) {
-            window.location.href = '/login.html';
-        }
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = '/login.html'; }
 
         document.addEventListener('DOMContentLoaded', cargarInventario);
 
@@ -145,47 +97,26 @@
                 const tabla = document.getElementById('tablaInventario');
                 tabla.innerHTML = '';
 
-                if (productos.length === 0) {
-                    tabla.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#999;">No hay productos. Haz clic en "+ Nuevo Producto".</td></tr>';
-                    return;
-                }
-
                 productos.forEach(function(p) {
-                    const claseStock = p.quantity <= p.min_stock ? 'low-stock' : 'good-stock';
-                    const textoStock = p.quantity <= p.min_stock ? '⚠️ Bajo' : '✅ OK';
                     const fila = document.createElement('tr');
-                    
-                    // Aquí guardamos TODOS los datos en el botón de editar de forma segura
-                    fila.innerHTML =
+                    fila.innerHTML = 
                         '<td>' + p.product_name + '</td>' +
                         '<td>' + p.category + '</td>' +
-                        '<td>' + p.quantity + '</td>' +
-                        '<td>' + p.unit + '</td>' +
-                        '<td>' + p.min_stock + '</td>' +
+                        '<td>' + p.quantity + ' ' + p.unit + '</td>' +
                         '<td>$' + parseFloat(p.cost_per_unit).toFixed(2) + '</td>' +
-                        '<td>' + p.supplier + '</td>' +
-                        '<td><span class="' + claseStock + '">' + textoStock + '</span></td>' +
                         '<td>' +
-                            '<button class="edit-btn" ' +
-                            'onclick="editarProducto(this)" ' +
-                            'data-id="' + p.id + '" ' +
-                            'data-name="' + p.product_name + '" ' +
-                            'data-category="' + p.category + '" ' +
-                            'data-quantity="' + p.quantity + '" ' +
-                            'data-unit="' + p.unit + '" ' +
-                            'data-minstock="' + p.min_stock + '" ' +
-                            'data-cost="' + p.cost_per_unit + '" ' +
-                            'data-supplier="' + p.supplier + '">' +
-                            'Editar</button>' +
-                            '<button class="delete-btn" onclick="eliminarProducto(' + p.id + ')">Eliminar</button>' +
+                            '<button class="edit-btn" onclick="window.editarProducto(' + p.id + ')">Editar</button>' +
+                            '<button class="delete-btn" onclick="window.eliminarProducto(' + p.id + ')">Eliminar</button>' +
                         '</td>';
                     tabla.appendChild(fila);
                 });
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error al cargar el inventario.');
+                console.error(error);
+                alert('Error al cargar el inventario');
             }
         }
+
+        function abrirModal() {
             document.getElementById('miModal').style.display = 'block';
             document.getElementById('tituloModal').textContent = 'Nuevo Producto';
             document.getElementById('formularioProducto').reset();
@@ -196,27 +127,15 @@
             document.getElementById('miModal').style.display = 'none';
         }
 
-                function editarProducto(btn) {
-            // Abrir el modal
-            document.getElementById('miModal').style.display = 'block';
-            document.getElementById('tituloModal').textContent = 'Editar Producto';
-            
-            // Leer los datos directamente del botón que fue clickeado (100% seguro)
-            document.getElementById('productoId').value = btn.getAttribute('data-id');
-            document.getElementById('nombreProducto').value = btn.getAttribute('data-name');
-            document.getElementById('categoria').value = btn.getAttribute('data-category');
-            document.getElementById('cantidad').value = btn.getAttribute('data-quantity');
-            document.getElementById('unidad').value = btn.getAttribute('data-unit');
-            document.getElementById('stockMinimo').value = btn.getAttribute('data-minstock');
-            document.getElementById('costoUnitario').value = btn.getAttribute('data-cost');
-            document.getElementById('proveedor').value = btn.getAttribute('data-supplier');
-        } {
+        // FUNCIÓN DE EDICIÓN CON PRUEBA DE VIDA
+        window.editarProducto = async function(id) {
+            alert("✅ ¡El botón EDITAR funciona! Intentando cargar el producto ID: " + id);
             try {
                 const respuesta = await fetch('/api/inventory', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const productos = await respuesta.json();
-                const p = productos.find(function(prod) { return prod.id === id; });
+                const p = productos.find(prod => prod.id === id);
 
                 if (p) {
                     document.getElementById('miModal').style.display = 'block';
@@ -225,27 +144,20 @@
                     document.getElementById('nombreProducto').value = p.product_name;
                     document.getElementById('categoria').value = p.category;
                     document.getElementById('cantidad').value = p.quantity;
-                    document.getElementById('unidad').value = p.unit;
-                    document.getElementById('stockMinimo').value = p.min_stock;
                     document.getElementById('costoUnitario').value = p.cost_per_unit;
-                    document.getElementById('proveedor').value = p.supplier;
                 }
             } catch (error) {
-                alert('Error al cargar los datos del producto.');
+                alert('Error al cargar los datos');
             }
         }
 
-        async function eliminarProducto(id) {
-            if (!confirm('¿Está seguro de eliminar este producto?')) return;
-            try {
-                await fetch('/api/inventory/' + id, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                cargarInventario();
-            } catch (error) {
-                alert('Error al eliminar el producto.');
-            }
+        window.eliminarProducto = async function(id) {
+            if (!confirm('¿Eliminar este producto?')) return;
+            await fetch('/api/inventory/' + id, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            cargarInventario();
         }
 
         document.getElementById('formularioProducto').addEventListener('submit', async function(e) {
@@ -255,35 +167,27 @@
                 product_name: document.getElementById('nombreProducto').value,
                 category: document.getElementById('categoria').value,
                 quantity: parseFloat(document.getElementById('cantidad').value),
-                unit: document.getElementById('unidad').value,
-                min_stock: parseFloat(document.getElementById('stockMinimo').value),
+                unit: 'unidades',
+                min_stock: 0,
                 cost_per_unit: parseFloat(document.getElementById('costoUnitario').value),
-                supplier: document.getElementById('proveedor').value
+                supplier: 'Proveedor Local'
             };
 
-            try {
-                const url = id ? '/api/inventory/' + id : '/api/inventory';
-                const metodo = id ? 'PUT' : 'POST';
-                await fetch(url, {
-                    method: metodo,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify(datos)
-                });
-                cerrarModal();
-                cargarInventario();
-            } catch (error) {
-                alert('Error al guardar el producto.');
-            }
+            const url = id ? '/api/inventory/' + id : '/api/inventory';
+            const metodo = id ? 'PUT' : 'POST';
+            
+            await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(datos)
+            });
+            cerrarModal();
+            cargarInventario();
         });
 
         window.onclick = function(event) {
-            if (event.target === document.getElementById('miModal')) {
-                cerrarModal();
-            }
-        };
+            if (event.target === document.getElementById('miModal')) cerrarModal();
+        }
     </script>
 </body>
 </html>
