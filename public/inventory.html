@@ -2,70 +2,217 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Inventario - Prueba</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Maestro Hotel OS</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background: #667eea; color: white; }
-        .btn { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .nav a { color: white; text-decoration: none; padding: 8px 16px; margin-right: 10px; border-radius: 8px; }
+        .nav a.active { background: rgba(255,255,255,0.3); font-weight: bold; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .add-btn { background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-bottom: 20px; }
+        table { width: 100%; background: white; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th { background: #667eea; color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
+        .btn { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px; }
         .edit { background: #17a2b8; }
         .delete { background: #dc3545; }
+        
+        /* Estilos del Modal */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; position: relative; }
+        .close-btn { position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer; color: #999; }
+        .close-btn:hover { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        .form-group input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .submit-btn:hover { background: #5a6fd6; }
     </style>
 </head>
 <body>
-    <h1>📦 Inventario (Versión de Prueba)</h1>
-    <p>Si ve esta página, el archivo nuevo SÍ se cargó.</p>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="tabla">
-            <!-- Aquí se cargarán los productos -->
-        </tbody>
-    </table>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="inventory.html" class="active">Inventario</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📦 Inventario</h2>
+        <button class="add-btn" onclick="abrirModalNuevo()">+ Nuevo Producto</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Costo Unit.</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+        </table>
+    </div>
+
+    <!-- MODAL -->
+    <div id="miModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <h2 id="tituloModal" style="margin-top: 0;">Producto</h2>
+            <form id="formularioProducto">
+                <input type="hidden" id="productoId">
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="nombreProducto" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <input type="text" id="categoria" required>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="cantidad" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Costo Unitario ($)</label>
+                    <input type="number" id="costoUnitario" step="0.01" required>
+                </div>
+                <button type="submit" class="submit-btn">💾 Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        console.log("✅ SCRIPT CARGADO CORRECTAMENTE");
-        
+        // Variable global para guardar los productos y no tener que pedirlos de nuevo al editar
+        let listaProductos = [];
         const token = localStorage.getItem('token');
-        if (!token) { 
-            alert("No hay sesión. Redirigiendo al login...");
-            window.location.href = '/login.html'; 
-        }
+        
+        if (!token) { window.location.href = '/login.html'; }
 
-        async function cargar() {
+        // 1. Cargar inventario al iniciar
+        async function cargarInventario() {
             try {
                 const resp = await fetch('/api/inventory', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                const productos = await resp.json();
+                listaProductos = await resp.json(); // Guardamos en la variable global
                 const tabla = document.getElementById('tabla');
-                
-                productos.forEach(p => {
+                tabla.innerHTML = '';
+
+                if (listaProductos.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">No hay productos. Agregue uno nuevo.</td></tr>';
+                    return;
+                }
+
+                listaProductos.forEach(p => {
                     const fila = document.createElement('tr');
-                    // AQUÍ ESTÁ LA CLAVE: El alert está directamente en el HTML
                     fila.innerHTML = `
                         <td>${p.product_name}</td>
-                        <td>${p.quantity}</td>
+                        <td>${p.category}</td>
+                        <td>${p.quantity} ${p.unit}</td>
+                        <td>$${parseFloat(p.cost_per_unit).toFixed(2)}</td>
                         <td>
-                            <button class="btn edit" onclick="alert('¡ÉXITO! El botón Editar funciona para el producto: ${p.product_name}')">Editar</button>
-                            <button class="btn delete" onclick="alert('¡ÉXITO! El botón Eliminar funciona para el ID: ${p.id}')">Eliminar</button>
+                            <button class="btn edit" onclick="editarProducto(${p.id})">Editar</button>
+                            <button class="btn delete" onclick="eliminarProducto(${p.id})">Eliminar</button>
                         </td>
                     `;
                     tabla.appendChild(fila);
                 });
             } catch (e) {
-                document.getElementById('tabla').innerHTML = '<tr><td colspan="3">Error al cargar. Verifique que inició sesión.</td></tr>';
+                alert('Error al cargar el inventario. Verifique su conexión.');
             }
         }
 
-        cargar();
+        // 2. Funciones del Modal
+        function abrirModalNuevo() {
+            document.getElementById('miModal').style.display = 'block';
+            document.getElementById('tituloModal').textContent = 'Nuevo Producto';
+            document.getElementById('formularioProducto').reset();
+            document.getElementById('productoId').value = '';
+        }
+
+        function cerrarModal() {
+            document.getElementById('miModal').style.display = 'none';
+        }
+
+        // 3. FUNCIÓN DE EDICIÓN (La que funciona)
+        function editarProducto(id) {
+            // Buscamos el producto en la lista que YA tenemos guardada (¡Súper rápido!)
+            const p = listaProductos.find(prod => prod.id == id);
+            
+            if (p) {
+                document.getElementById('miModal').style.display = 'block';
+                document.getElementById('tituloModal').textContent = 'Editar Producto: ' + p.product_name;
+                
+                // Llenamos los campos
+                document.getElementById('productoId').value = p.id;
+                document.getElementById('nombreProducto').value = p.product_name;
+                document.getElementById('categoria').value = p.category;
+                document.getElementById('cantidad').value = p.quantity;
+                document.getElementById('costoUnitario').value = p.cost_per_unit;
+            } else {
+                alert('No se encontró el producto.');
+            }
+        }
+
+        // 4. Eliminar producto
+        async function eliminarProducto(id) {
+            if (!confirm('¿Está seguro de eliminar este producto?')) return;
+            try {
+                await fetch('/api/inventory/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                cargarInventario(); // Recargamos la tabla
+            } catch (e) {
+                alert('Error al eliminar.');
+            }
+        }
+
+        // 5. Guardar (Sirve para Nuevo y para Editar)
+        document.getElementById('formularioProducto').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('productoId').value;
+            const datos = {
+                product_name: document.getElementById('nombreProducto').value,
+                category: document.getElementById('categoria').value,
+                quantity: parseFloat(document.getElementById('cantidad').value),
+                unit: 'unidades',
+                min_stock: 0,
+                cost_per_unit: parseFloat(document.getElementById('costoUnitario').value),
+                supplier: 'Proveedor Local'
+            };
+
+            const url = id ? '/api/inventory/' + id : '/api/inventory';
+            const metodo = id ? 'PUT' : 'POST';
+            
+            try {
+                await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(datos)
+                });
+                cerrarModal();
+                cargarInventario();
+                alert('✅ Producto guardado exitosamente.');
+            } catch (e) {
+                alert('Error al guardar el producto.');
+            }
+        });
+
+        // Cerrar modal si se hace clic fuera de él
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('miModal')) {
+                cerrarModal();
+            }
+        }
+
+        // Iniciar
+        cargarInventario();
     </script>
 </body>
 </html>
