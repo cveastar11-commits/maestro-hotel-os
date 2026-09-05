@@ -47,6 +47,7 @@
             <a href="accounting.html" class="active">💰 Contabilidad</a>
             <a href="reports.html">📈 Reportes</a>
             <a href="users.html">👥 Usuarios</a>
+   <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
             <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
@@ -300,6 +301,25 @@
         }
 
         cargarCuentas();
+   // MODO OSCURO
+   function toggleTheme() {
+       document.body.classList.toggle('dark-mode');
+       const isDark = document.body.classList.contains('dark-mode');
+       localStorage.setItem('theme', isDark ? 'dark' : 'light');
+       
+       const btn = document.querySelector('.theme-toggle');
+       if (btn) {
+           btn.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+       }
+   }
+
+   if (localStorage.getItem('theme') === 'dark') {
+       document.body.classList.add('dark-mode');
+       const btn = document.querySelector('.theme-toggle');
+       if (btn) {
+           btn.textContent = '☀️ Modo Claro';
+       }
+   }
     </script>
 </body>
 </html>
