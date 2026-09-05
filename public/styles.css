@@ -470,3 +470,96 @@ tr:hover {
         padding: 15px;
     }
 }
+/* ============================================
+   MODO OSCURO
+   ============================================ */
+
+body.dark-mode {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+body.dark-mode .header {
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+}
+
+body.dark-mode .card,
+body.dark-mode .summary-card {
+    background: #2d2d2d;
+    color: #e0e0e0;
+}
+
+body.dark-mode .card h3,
+body.dark-mode .summary-card h3 {
+    color: #a0aec0;
+}
+
+body.dark-mode .summary-card .amount {
+    color: #e0e0e0;
+}
+
+body.dark-mode table {
+    background: #2d2d2d;
+}
+
+body.dark-mode th {
+    background: #4a5568;
+    color: #e0e0e0;
+}
+
+body.dark-mode td {
+    color: #e0e0e0;
+    border-bottom: 1px solid #4a5568;
+}
+
+body.dark-mode tr:hover {
+    background: #3d3d3d;
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group select,
+body.dark-mode .form-group textarea {
+    background: #3d3d3d;
+    color: #e0e0e0;
+    border-color: #4a5568;
+}
+
+body.dark-mode .modal-content {
+    background: #2d2d2d;
+    color: #e0e0e0;
+}
+
+body.dark-mode .tab {
+    background: #2d2d2d;
+    color: #e0e0e0;
+}
+
+body.dark-mode .tab.active {
+    background: #667eea;
+    color: white;
+}
+
+body.dark-mode .btn-secondary {
+    background: #4a5568;
+    color: #e0e0e0;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background: #2d3748;
+}
+
+/* Botón de cambio de tema */
+.theme-toggle {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.theme-toggle:hover {
+    background: rgba(255,255,255,0.3);
+}
