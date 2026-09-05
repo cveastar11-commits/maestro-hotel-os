@@ -12,11 +12,10 @@
         <div class="nav">
             <a href="dashboard.html" class="active">📊 Dashboard</a>
             <a href="inventory.html" class="menu-inventario">📦 Inventario</a>
-
             <a href="accounting.html" class="menu-contabilidad">💰 Contabilidad</a>
             <a href="reports.html" class="menu-reportes">📈 Reportes</a>
             <a href="users.html" class="menu-usuarios">👥 Usuarios</a>
-<button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
             <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
@@ -61,14 +60,12 @@
         
         if (!token) { window.location.href = '/login.html'; }
 
-        // Mostrar datos del usuario
         document.getElementById('nombreUsuario').textContent = userData.name || 'Usuario';
         document.getElementById('rolUsuario').textContent = userData.role || 'recepcionista';
         document.getElementById('fechaActual').textContent = new Date().toLocaleDateString('es-ES', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
-        // Control de permisos según rol
         const userRole = userData.role;
         console.log('🔍 Rol detectado:', userRole);
 
@@ -88,10 +85,8 @@
             });
         }
 
-        // Cargar estadísticas básicas
         async function cargarEstadisticas() {
             try {
-                // Ingresos del mes
                 const resp = await fetch('/api/income-statement', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
@@ -110,21 +105,18 @@
             }
         }
 
-        cargarEstadisticas();
-        // Modo oscuro
+        // MODO OSCURO
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             
-            // Cambiar texto del botón
             const btn = document.querySelector('.theme-toggle');
             if (btn) {
                 btn.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
             }
         }
 
-        // Cargar tema guardado
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
             const btn = document.querySelector('.theme-toggle');
@@ -132,7 +124,8 @@
                 btn.textContent = '☀️ Modo Claro';
             }
         }
-   <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
+
+        cargarEstadisticas();
     </script>
 </body>
 </html>
