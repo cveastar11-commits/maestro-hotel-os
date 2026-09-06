@@ -10,8 +10,12 @@ const menuItems = [
 ];
 
 function renderNav(activePage) {
+    // Buscamos el contenedor por ID
     const navContainer = document.getElementById('mainNav');
-    if (!navContainer) return;
+    if (!navContainer) {
+        console.warn('⚠️ No se encontró el contenedor #mainNav. Agregue <div id="mainNav"></div> en su HTML.');
+        return;
+    }
 
     let html = '';
     menuItems.forEach(item => {
