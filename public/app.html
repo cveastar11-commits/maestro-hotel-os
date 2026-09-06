@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Maestro Hotel OS - Sistema Integrado</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Layout Dinámico tipo App */
+        .app-layout { display: flex; height: 100vh; }
+        
+        /* Barra Lateral (La Brújula) */
+        .sidebar { 
+            width: 260px; background: linear-gradient(180deg, #2d3748, #1a202c); 
+            color: white; padding: 20px; display: flex; flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 { font-size: 20px; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .nav-link { 
+            display: flex; align-items: center; gap: 12px; padding: 12px 15px; 
+            color: #cbd5e0; text-decoration: none; border-radius: 8px; 
+            margin-bottom: 5px; transition: all 0.3s; cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .nav-link.active { background: #667eea; font-weight: bold; }
+        
+        /* Área de Contenido Principal */
+        .main-content { flex: 1; overflow-y: auto; background: #f5f5f5; padding: 30px; }
+        
+        body.dark-mode .sidebar { background: #121212; }
+        body.dark-mode .main-content { background: #1a1a1a; color: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- BARRA LATERAL FIJA -->
+        <div class="sidebar">
+            <h2>🏨 Maestro OS</h2>
+            <div id="menuLateral">
+                <!-- Se llena con JS -->
+            </div>
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button class="theme-toggle" onclick="toggleTheme()" style="width:100%; text-align:left; background:none; border:none; color:white; padding:10px; cursor:pointer;">🌙 Modo Oscuro</button>
+                <a href="#" onclick="cerrarSesion()" style="display:block; color:#fc8181; padding:10px; text-decoration:none;">🚪 Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <!-- CONTENIDO DINÁMICO -->
+        <div class="main-content" id="contenidoPrincipal">
+            <!-- Aquí se cargan las vistas -->
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>
+        // Configuración de Vistas (El Mapa del Tesoro)
+        const vistas = {
+            'hub': { title: 'Centro de Control', file: 'views/hub.html' },
+            'frontdesk': { title: 'Front Desk', file: 'views/frontdesk.html' },
+            'rooms': { title: 'Habitaciones', file: 'views/rooms.html' },
+            'inventory': { title: 'Inventario', file: 'views/inventory.html' },
+            'accounting': { title: 'Contabilidad', file: 'views/accounting.html' },
+            'billing': { title: 'Facturación', file: 'views/billing.html' },
+            'reports': { title: 'Reportes', file: 'views/reports.html' }
+        };
+
+        function cargarVista(key) {
+            const container = document.getElementById('contenidoPrincipal');
+            const menuLinks = document.querySelectorAll('.nav-link');
+            
+            // Actualizar menú activo
+            menuLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`[data-view="${key}"]`);
+            if(activeLink) activeLink.classList.add('active');
+
+            // Cargar contenido (Simulado por ahora para velocidad)
+            container.innerHTML = `<h2>${vistas[key].title}</h2><p>Cargando módulo...</p>`;
+            
+            // Aquí iría el fetch real, pero usaremos lógica interna para la demo
+            setTimeout(() => {
+                if(key === 'hub') renderHub(container);
+                if(key === 'frontdesk') renderFrontDesk(container);
+                // ... agregar más renders aquí
+            }, 300);
+        }
+
+        function initMenu() {
+            const menu = document.getElementById('menuLateral');
+            let html = `<div class="nav-link" data-view="hub" onclick="cargarVista('hub')">🏠 Centro de Control</div>`;
+            Object.keys(vistas).forEach(key => {
+                if(key !== 'hub') {
+                    html += `<div class="nav-link" data-view="${key}" onclick="cargarVista('${key}')">${vistas[key].title}</div>`;
+                }
+            });
+            menu.innerHTML = html;
+        }
+
+        // Funciones de Renderizado de Vistas (Para que sea rápido)
+        function renderHub(c) {
+            c.innerHTML = `
+                <h2>👋 Bienvenido al Centro de Control</h2>
+                <div class="summary-box">
+                    <div class="summary-card"><h3>Ocupación</h3><div class="amount">85%</div></div>
+                    <div class="summary-card"><h3>Ingresos</h3><div class="amount">$12k</div></div>
+                    <div class="summary-card"><h3>Huéspedes</h3><div class="amount">24</div></div>
+                </div>
+                <p>Seleccione una opción en la barra lateral para comenzar.</p>
+            `;
+        }
+
+        function renderFrontDesk(c) {
+            c.innerHTML = `
+                <h2>👥 Front Desk Operativo</h2>
+                <div class="card">
+                    <button class="btn btn-primary" onclick="alert('Abrir Check-in')">📥 Nuevo Check-in</button>
+                    <button class="btn btn-danger" onclick="alert('Abrir Check-out')">📤 Check-out</button>
+                </div>
+                <table>
+                    <thead><tr><th>Hab</th><th>Huésped</th><th>Estado</th></tr></thead>
+                    <tbody><tr><td>101</td><td>Juan P.</td><td>✅ Ocupada</td></tr></tbody>
+                </table>
+            `;
+        }
+
+        // Inicialización
+        if (!localStorage.getItem('token')) window.location.href = '/login.html';
+        initMenu();
+        cargarVista('hub'); // Empezar en el Hub
+    </script>
+</body>
+</html>
