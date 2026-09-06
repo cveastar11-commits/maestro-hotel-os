@@ -50,7 +50,28 @@
         </div>
     </div>
 
-    <script src="nav.js"></script>
+    <script src="nav.js"></script>        function renderRooms(c) {
+            c.innerHTML = `
+                <h2>🛏️ Estado de Habitaciones y Limpieza</h2>
+                <div class="card">
+                    ${[101, 102, 103, 104, 201].map(num => {
+                        const limpieza = Math.floor(Math.random() * 100); // Simulación
+                        const color = limpieza === 100 ? '#28a745' : (limpieza > 50 ? '#ffc107' : '#dc3545');
+                        return `
+                        <div style="margin-bottom:15px; padding:10px; background:#f9f9f9; border-radius:8px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <strong>Hab. ${num}</strong>
+                                <span style="color:${color}; font-weight:bold;">${limpieza}% Lista</span>
+                            </div>
+                            <div style="background:#ddd; border-radius:5px; height:10px; width:100%;">
+                                <div style="background:${color}; width:${limpieza}%; height:100%; border-radius:5px; transition:width 1s;"></div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
     <script>
         // Configuración de Vistas (El Mapa del Tesoro)
         const vistas = {
@@ -63,7 +84,12 @@
             'reports': { title: 'Reportes', file: 'views/reports.html' }
         };
 
-        function cargarVista(key) {
+        function cargarVista(key) 
+            setTimeout(() => {
+                if(key === 'hub') renderHub(container);
+                if(key === 'frontdesk') renderFrontDesk(container);
+                if(key === 'rooms') renderRooms(container); // Agregue esta línea
+            }, 300);{
             const container = document.getElementById('contenidoPrincipal');
             const menuLinks = document.querySelectorAll('.nav-link');
             
@@ -107,7 +133,55 @@
             `;
         }
 
-        function renderFrontDesk(c) {
+        function         function renderFrontDesk(c) {
+            c.innerHTML = `
+                <h2>👥 Front Desk Operativo</h2>
+                
+                <!-- BARRA DE OCUPACIÓN GLOBAL -->
+                <div class="card">
+                    <h3>📊 Ocupación del Hotel Hoy</h3>
+                    <div style="background:#eee; border-radius:10px; height:25px; width:100%; margin:10px 0; overflow:hidden;">
+                        <div style="background:linear-gradient(90deg, #667eea, #764ba2); width:85%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:12px;">85% Ocupado (17/20 Hab.)</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>⚡ Acciones Rápidas</h3>
+                    <button class="btn btn-primary" onclick="alert('Módulo de Check-in')">📥 Nuevo Check-in</button>
+                    <button class="btn btn-danger" onclick="alert('Módulo de Check-out')">📤 Check-out</button>
+                </div>
+
+                <!-- LISTA CON BARRAS DE PROGRESO DE ESTADÍA -->
+                <h3>📋 Huéspedes Activos</h3>
+                <table>
+                    <thead><tr><th>Hab</th><th>Huésped</th><th>Progreso de Estadía</th><th>Estado</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>101</td>
+                            <td>Juan Pérez</td>
+                            <td>
+                                <div style="background:#e0e0e0; border-radius:5px; height:8px; width:100%;">
+                                    <div style="background:#28a745; width:60%; height:100%; border-radius:5px;"></div>
+                                </div>
+                                <small>Día 3 de 5</small>
+                            </td>
+                            <td><span class="status-badge bg-green">✅ Hospedado</span></td>
+                        </tr>
+                        <tr>
+                            <td>205</td>
+                            <td>Ana García</td>
+                            <td>
+                                <div style="background:#e0e0e0; border-radius:5px; height:8px; width:100%;">
+                                    <div style="background:#ffc107; width:20%; height:100%; border-radius:5px;"></div>
+                                </div>
+                                <small>Día 1 de 5</small>
+                            </td>
+                            <td><span class="status-badge bg-green">✅ Hospedado</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        } {
             c.innerHTML = `
                 <h2>👥 Front Desk Operativo</h2>
                 <div class="card">
