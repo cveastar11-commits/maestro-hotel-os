@@ -2,28 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ocupación - Maestro Hotel OS</title>
+    <title>Front Desk - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        .habitacion-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
-        .hab-card { padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; position: relative; }
-        .hab-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .libre { background: #d4edda; border-color: #28a745; color: #155724; }
-        .ocupada { background: #f8d7da; border-color: #dc3545; color: #721c24; }
-        .badge-huespedes { position: absolute; top: -10px; right: -10px; background: #667eea; color: white; border-radius: 50%; width: 30px; height: 30px; line-height: 30px; font-weight: bold; }
+        /* Estilos Modernos Dinámicos */
+        .timeline-container { overflow-x: auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .timeline-header { display: flex; margin-bottom: 10px; padding-left: 100px; }
+        .timeline-day { flex: 1; text-align: center; font-weight: bold; color: #666; min-width: 60px; }
         
-        /* Calendario */
-        .calendario-wrapper { overflow-x: auto; margin-top: 20px; }
-        .calendario-table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        .calendario-table th { background: #667eea; color: white; padding: 10px; text-align: center; }
-        .calendario-table td { border: 1px solid #eee; padding: 10px; text-align: center; height: 60px; vertical-align: middle; }
-        .celda-ocupada { background: #ffebee; color: #c62828; font-weight: bold; border-radius: 4px; }
-        .celda-libre { background: #e8f5e9; color: #2e7d32; }
+        .room-row { display: flex; align-items: center; margin-bottom: 15px; position: relative; height: 50px; }
+        .room-label { width: 100px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px; }
+        .room-status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-libre { background: #28a745; }
+        .dot-ocupada { background: #dc3545; }
+        
+        .timeline-track { flex: 1; position: relative; height: 100%; background: #f9f9f9; border-radius: 8px; display: flex; }
+        .reservation-bar { 
+            position: absolute; height: 36px; top: 7px; 
+            background: linear-gradient(90deg, #667eea, #764ba2); 
+            border-radius: 6px; color: white; font-size: 12px; 
+            display: flex; align-items: center; padding: 0 10px; 
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            overflow: hidden; white-space: nowrap;
+        }
+        .reservation-bar:hover { transform: scale(1.02); z-index: 10; }
+        
+        /* Modal Moderno */
+        .glass-modal { 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏨 Maestro Hotel OS</h1>
+        <h1>🏨 Maestro Hotel OS <span style="font-size:14px; opacity:0.8;">| Front Desk</span></h1>
         <div class="nav">
             <a href="dashboard.html">📊 Dashboard</a>
             <a href="inventory.html">📦 Inventario</a>
@@ -37,47 +50,35 @@
     </div>
 
     <div class="container">
-        <!-- MAPA DE HABITACIONES -->
         <div class="card">
-            <h3>🗺️ Mapa de Habitaciones (Clic para Gestionar)</h3>
-            <div class="habitacion-grid" id="mapaHabitaciones"></div>
-        </div>
-
-        <!-- CALENDARIO MENSUAL -->
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>📅 Calendario de Ocupación - Septiembre 2026</h3>
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h3>📅 Calendario de Ocupación (Vista Semanal)</h3>
                 <div>
-                    <button class="btn btn-primary" onclick="cambiarVista('diario')">Diario</button>
-                    <button class="btn btn-primary" onclick="cambiarVista('semanal')">Semanal</button>
-                    <button class="btn btn-primary" onclick="cambiarVista('mensual')">Mensual</button>
+                    <button class="btn btn-primary">Hoy</button>
+                    <button class="btn btn-primary">&lt;</button>
+                    <button class="btn btn-primary">&gt;</button>
                 </div>
             </div>
-            <div class="calendario-wrapper">
-                <table class="calendario-table" id="tablaCalendario">
-                    <thead>
-                        <tr><th>Hab.</th><th>01</th><th>02</th><th>03</th><th>04</th><th>05</th><th>06</th><th>07</th><th>08</th><th>09</th><th>10</th></tr>
-                    </thead>
-                    <tbody id="cuerpoCalendario"></tbody>
-                </table>
-            </div>
+
+            <!-- Línea de tiempo de días -->
+            <div class="timeline-header" id="diasHeader"></div>
+
+            <!-- Filas de habitaciones -->
+            <div id="timelineBody"></div>
         </div>
     </div>
 
-    <!-- MODAL DE GESTIÓN -->
-    <div id="modalGestion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999;">
-        <div style="background:white; margin:5% auto; padding:30px; border-radius:15px; width:90%; max-width:500px;">
-            <h3 id="tituloModal">Gestión de Habitación</h3>
-            <div class="form-group">
-                <label>Huéspedes (Máx. 8)</label>
-                <textarea id="listaHuespedes" rows="4" placeholder="1. Juan Pérez&#10;2. Maria Lopez..."></textarea>
+    <!-- Modal de Detalle -->
+    <div id="modalDetalle" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; backdrop-filter:blur(5px);">
+        <div class="glass-modal" style="margin:10% auto; padding:30px; border-radius:15px; width:400px;">
+            <h3 id="modalTitle">Detalle de Reserva</h3>
+            <p id="modalGuest" style="font-size:18px; margin:10px 0; font-weight:bold;"></p>
+            <p id="modalDates" style="color:#666;"></p>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button class="btn btn-success" style="flex:1">Check-in</button>
+                <button class="btn btn-danger" style="flex:1">Check-out</button>
             </div>
-            <div class="form-row">
-                <div class="form-group"><label>Check-in</label><input type="date" id="fechaIn"></div>
-                <div class="form-group"><label>Check-out</label><input type="date" id="fechaOut"></div>
-            </div>
-            <button class="btn btn-success" onclick="guardarCambios()" style="width:100%">💾 Guardar Cambios</button>
-            <button class="btn btn-danger" onclick="cerrarModal()" style="width:100%; margin-top:10px;">Cancelar</button>
+            <button class="btn" onclick="document.getElementById('modalDetalle').style.display='none'" style="width:100%; margin-top:10px; background:#eee;">Cerrar</button>
         </div>
     </div>
 
@@ -85,78 +86,64 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
 
-        // Datos en memoria para velocidad extrema
-        let habitaciones = [
-            { num: '101', status: 'ocupada', huespedes: ['Juan Pérez', 'Ana García'], checkin: '2026-09-01', checkout: '2026-09-05' },
-            { num: '102', status: 'libre', huespedes: [], checkin: '', checkout: '' },
-            { num: '103', status: 'libre', huespedes: [], checkin: '', checkout: '' },
-            { num: '104', status: 'ocupada', huespedes: ['Carlos Ruiz'], checkin: '2026-09-03', checkout: '2026-09-10' },
-            { num: '105', status: 'libre', huespedes: [], checkin: '', checkout: '' },
-            { num: '201', status: 'ocupada', huespedes: ['Familia Torres', 'Luis Torres', 'Maria Torres'], checkin: '2026-09-06', checkout: '2026-09-08' },
-            { num: '202', status: 'libre', huespedes: [], checkin: '', checkout: '' },
+        // Datos simulados para la vista dinámica
+        const rooms = [
+            { num: '101', status: 'libre' },
+            { num: '102', status: 'ocupada' },
+            { num: '103', status: 'libre' },
+            { num: '104', status: 'ocupada' },
+            { num: '201', status: 'libre' },
+            { num: '202', status: 'ocupada' },
         ];
 
-        let habActual = null;
+        const reservations = [
+            { room: '102', guest: 'Juan Pérez', start: 1, length: 3, color: '#667eea' },
+            { room: '104', guest: 'Familia Torres', start: 0, length: 5, color: '#764ba2' },
+            { room: '202', guest: 'Ana García', start: 2, length: 2, color: '#28a745' },
+        ];
 
-        function renderizarMapa() {
-            const mapa = document.getElementById('mapaHabitaciones');
-            mapa.innerHTML = '';
-            habitaciones.forEach(h => {
-                const div = document.createElement('div');
-                div.className = `hab-card ${h.status}`;
-                div.innerHTML = `<strong style="font-size:20px">${h.num}</strong><br><small>${h.status.toUpperCase()}</small>`;
-                if (h.huespedes.length > 0) {
-                    div.innerHTML += `<span class="badge-huespedes">${h.huespedes.length}</span>`;
-                }
-                div.onclick = () => abrirModal(h);
-                mapa.appendChild(div);
-            });
-        }
-
-        function renderizarCalendario() {
-            const tbody = document.getElementById('cuerpoCalendario');
-            tbody.innerHTML = '';
-            habitaciones.forEach(h => {
-                let fila = `<tr><td><strong>${h.num}</strong></td>`;
-                for(let i=1; i<=10; i++) { // Simulamos 10 días
-                    let diaStr = `2026-09-${i.toString().padStart(2, '0')}`;
-                    let ocupado = (h.checkin <= diaStr && h.checkout >= diaStr);
-                    fila += `<td class="${ocupado ? 'celda-ocupada' : 'celda-libre'}">${ocupado ? '🔴' : '🟢'}</td>`;
-                }
-                fila += '</tr>';
-                tbody.innerHTML += fila;
-            });
-        }
-
-        function abrirModal(h) {
-            habActual = h;
-            document.getElementById('modalGestion').style.display = 'block';
-            document.getElementById('tituloModal').textContent = `Habitación ${h.num}`;
-            document.getElementById('listaHuespedes').value = h.huespedes.join('\n');
-            document.getElementById('fechaIn').value = h.checkin;
-            document.getElementById('fechaOut').value = h.checkout;
-        }
-
-        function guardarCambios() {
-            const nombres = document.getElementById('listaHuespedes').value.split('\n').filter(n => n.trim() !== '');
-            const inDate = document.getElementById('fechaIn').value;
-            const outDate = document.getElementById('fechaOut').value;
-
-            if (nombres.length > 8) { alert('Máximo 8 huéspedes por habitación'); return; }
+        function renderTimeline() {
+            const header = document.getElementById('diasHeader');
+            const body = document.getElementById('timelineBody');
             
-            habActual.huespedes = nombres;
-            habActual.checkin = inDate;
-            habActual.checkout = outDate;
-            habActual.status = nombres.length > 0 ? 'ocupada' : 'libre';
-            
-            cerrarModal();
-            renderizarMapa();
-            renderizarCalendario();
-            alert('✅ Información actualizada correctamente');
+            // Renderizar días (Lun - Dom)
+            let daysHtml = '';
+            ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => {
+                daysHtml += `<div class="timeline-day">${d}</div>`;
+            });
+            header.innerHTML = daysHtml;
+
+            // Renderizar filas de habitaciones
+            let rowsHtml = '';
+            rooms.forEach(r => {
+                let bars = '';
+                reservations.filter(res => res.room === r.num).forEach(res => {
+                    // Cálculo simple de posición para la demo
+                    let left = (res.start * 14.28) + '%'; 
+                    let width = (res.length * 14.28) + '%';
+                    bars += `<div class="reservation-bar" style="left:${left}; width:${width}; background:${res.color};" onclick="verDetalle('${res.guest}')">
+                        ${res.guest}
+                    </div>`;
+                });
+
+                rowsHtml += `
+                    <div class="room-row">
+                        <div class="room-label">
+                            <div class="room-status-dot ${r.status === 'libre' ? 'dot-libre' : 'dot-ocupada'}"></div>
+                            ${r.num}
+                        </div>
+                        <div class="timeline-track">${bars}</div>
+                    </div>
+                `;
+            });
+            body.innerHTML = rowsHtml;
         }
 
-        function cerrarModal() { document.getElementById('modalGestion').style.display = 'none'; }
-        function cambiarVista(vista) { alert(`Vista ${vista} seleccionada (Simulación visual)`); }
+        function verDetalle(guest) {
+            document.getElementById('modalDetalle').style.display = 'block';
+            document.getElementById('modalGuest').textContent = guest;
+            document.getElementById('modalDates').textContent = '01 Sep - 05 Sep • 2 Huéspedes';
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
@@ -165,8 +152,7 @@
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
         function cerrarSesion() { if(confirm('¿Salir?')) { localStorage.clear(); window.location.href = '/login.html'; } }
 
-        renderizarMapa();
-        renderizarCalendario();
+        renderTimeline();
     </script>
 </body>
 </html>
