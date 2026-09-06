@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
@@ -13,26 +13,30 @@
             <a href="dashboard.html">📊 Dashboard</a>
             <a href="inventory.html">📦 Inventario</a>
             <a href="accounting.html">💰 Contabilidad</a>
-            <a href="guests.html">👥 Ocupación</a>
-            <a href="billing.html">💳 Facturación</a>
             <a href="reports.html" class="active">📈 Reportes</a>
-            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-            <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+            <a href="users.html">👥 Usuarios</a>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
+            <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
 
     <div class="container">
-        <h2>📈 Reportes Gerenciales</h2>
+        <h2 style="margin-bottom: 25px;">📈 Reportes Financieros</h2>
         
         <div class="summary-box">
-            <div class="summary-card"><h3>Ocupación Promedio</h3><div class="amount">75%</div></div>
-            <div class="summary-card"><h3>Tarifa Promedio</h3><div class="amount">$120.00</div></div>
-            <div class="summary-card"><h3>RevPAR</h3><div class="amount">$90.00</div></div>
+            <div class="summary-card"><h3>Ingresos Totales</h3><div class="amount" id="repIngresos">$0.00</div></div>
+            <div class="summary-card"><h3>Gastos Totales</h3><div class="amount" id="repGastos">$0.00</div></div>
+            <div class="summary-card"><h3>Utilidad Neta</h3><div class="amount" id="repUtilidad">$0.00</div></div>
         </div>
 
-        <div class="card" style="height: 400px;">
-            <h3>📊 Tendencia de Ocupación Mensual</h3>
-            <canvas id="graficoOcupacion"></canvas>
+        <div class="card">
+            <h3>Balance de Comprobación Detallado</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th>Débito</th><th>Crédito</th><th>Saldo</th></tr></thead>
+                    <tbody id="tablaBalance"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -40,26 +44,41 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
 
-        new Chart(document.getElementById('graficoOcupacion'), {
-            type: 'line',
-            data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [{
-                    label: '% Ocupación',
-                    data: [65, 59, 80, 81, 56, 75],
-                    borderColor: '#667eea',
-                    tension: 0.4
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        async function cargarReportes() {
+            try {
+                const incResp = await fetch('/api/income-statement', { headers: { 'Authorization': 'Bearer ' + token } });
+                const incData = await incResp.json();
+                document.getElementById('repIngresos').textContent = '$' + incData.totalIncome.toFixed(2);
+                document.getElementById('repGastos').textContent = '$' + incData.totalExpenses.toFixed(2);
+                document.getElementById('repUtilidad').textContent = '$' + incData.netIncome.toFixed(2);
+
+                const balResp = await fetch('/api/trial-balance', { headers: { 'Authorization': 'Bearer ' + token } });
+                const balData = await balResp.json();
+                document.getElementById('tablaBalance').innerHTML = balData.map(b => `
+                    <tr>
+                        <td>${b.code}</td>
+                        <td>${b.name}</td>
+                        <td>${b.type}</td>
+                        <td>$${parseFloat(b.total_debit).toFixed(2)}</td>
+                        <td>$${parseFloat(b.total_credit).toFixed(2)}</td>
+                        <td><strong>$${parseFloat(b.balance).toFixed(2)}</strong></td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            document.querySelector('.theme-toggle').textContent = document.body.classList.contains('dark-mode') ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
         }
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-        function cerrarSesion() { if(confirm('¿Salir?')) { localStorage.clear(); window.location.href = '/login.html'; } }
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.querySelector('.theme-toggle').textContent = '☀️ Modo Claro';
+        }
+        function cerrarSesion() { if(confirm('¿Cerrar sesión?')) { localStorage.clear(); window.location.href = '/login.html'; } }
+
+        cargarReportes();
     </script>
 </body>
 </html>
