@@ -5,38 +5,40 @@
     <title>Front Desk - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Estilos Modernos Dinámicos */
-        .timeline-container { overflow-x: auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .timeline-header { display: flex; margin-bottom: 10px; padding-left: 100px; }
-        .timeline-day { flex: 1; text-align: center; font-weight: bold; color: #666; min-width: 60px; }
+        /* Estilos Premium Dinámicos */
+        .timeline-container { overflow-x: auto; background: rgba(255,255,255,0.9); border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); backdrop-filter: blur(4px); }
+        .timeline-header { display: flex; margin-bottom: 15px; padding-left: 120px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .timeline-day { flex: 1; text-align: center; font-weight: 700; color: #555; min-width: 50px; font-size: 13px; }
         
-        .room-row { display: flex; align-items: center; margin-bottom: 15px; position: relative; height: 50px; }
-        .room-label { width: 100px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px; }
-        .room-status-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .dot-libre { background: #28a745; }
-        .dot-ocupada { background: #dc3545; }
+        .room-row { display: flex; align-items: center; margin-bottom: 12px; position: relative; height: 60px; transition: background 0.2s; }
+        .room-row:hover { background: #f0f4ff; border-radius: 8px; }
         
-        .timeline-track { flex: 1; position: relative; height: 100%; background: #f9f9f9; border-radius: 8px; display: flex; }
+        .room-label { width: 120px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 8px; padding-left: 10px; }
+        .room-type { font-size: 11px; color: #888; font-weight: normal; }
+        
+        .timeline-track { flex: 1; position: relative; height: 100%; display: flex; cursor: pointer; }
+        
         .reservation-bar { 
-            position: absolute; height: 36px; top: 7px; 
-            background: linear-gradient(90deg, #667eea, #764ba2); 
-            border-radius: 6px; color: white; font-size: 12px; 
-            display: flex; align-items: center; padding: 0 10px; 
-            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            overflow: hidden; white-space: nowrap;
+            position: absolute; height: 40px; top: 10px; 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            border-radius: 8px; color: white; font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; 
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); overflow: hidden;
         }
-        .reservation-bar:hover { transform: scale(1.02); z-index: 10; }
+        .reservation-bar:hover { transform: translateY(-3px) scale(1.02); z-index: 100; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6); }
         
-        /* Modal Moderno */
+        /* Modal Glassmorphism */
         .glass-modal { 
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         }
+        body.dark-mode .glass-modal { background: rgba(30, 30, 30, 0.9); border-color: #444; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏨 Maestro Hotel OS <span style="font-size:14px; opacity:0.8;">| Front Desk</span></h1>
+        <h1>🏨 Maestro Hotel OS <span style="font-size:14px; opacity:0.8;">| Front Desk Pro</span></h1>
         <div class="nav">
             <a href="dashboard.html">📊 Dashboard</a>
             <a href="inventory.html">📦 Inventario</a>
@@ -50,35 +52,37 @@
     </div>
 
     <div class="container">
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h3>📅 Calendario de Ocupación (Vista Semanal)</h3>
-                <div>
-                    <button class="btn btn-primary">Hoy</button>
-                    <button class="btn btn-primary">&lt;</button>
-                    <button class="btn btn-primary">&gt;</button>
-                </div>
+        <div class="card" style="padding:0; overflow:hidden; background:transparent; box-shadow:none;">
+            <div class="timeline-container">
+                <div class="timeline-header" id="diasHeader"></div>
+                <div id="timelineBody"></div>
             </div>
-
-            <!-- Línea de tiempo de días -->
-            <div class="timeline-header" id="diasHeader"></div>
-
-            <!-- Filas de habitaciones -->
-            <div id="timelineBody"></div>
         </div>
     </div>
 
-    <!-- Modal de Detalle -->
-    <div id="modalDetalle" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; backdrop-filter:blur(5px);">
-        <div class="glass-modal" style="margin:10% auto; padding:30px; border-radius:15px; width:400px;">
-            <h3 id="modalTitle">Detalle de Reserva</h3>
-            <p id="modalGuest" style="font-size:18px; margin:10px 0; font-weight:bold;"></p>
-            <p id="modalDates" style="color:#666;"></p>
-            <div style="margin-top:20px; display:flex; gap:10px;">
-                <button class="btn btn-success" style="flex:1">Check-in</button>
-                <button class="btn btn-danger" style="flex:1">Check-out</button>
+    <!-- Modal de Gestión Interactiva -->
+    <div id="modalGestion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; backdrop-filter:blur(8px);">
+        <div class="glass-modal" style="margin:5% auto; padding:30px; border-radius:20px; width:90%; max-width:500px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 id="modalTitle" style="margin:0;">Habitación</h3>
+                <span id="modalStatus" style="padding:5px 10px; border-radius:20px; font-size:12px; font-weight:bold;"></span>
             </div>
-            <button class="btn" onclick="document.getElementById('modalDetalle').style.display='none'" style="width:100%; margin-top:10px; background:#eee;">Cerrar</button>
+            
+            <div class="form-group">
+                <label>Lista de Huéspedes (Máx. 8)</label>
+                <textarea id="listaHuespedes" rows="5" placeholder="1. Nombre Apellido&#10;2. Nombre Apellido..." style="background:rgba(255,255,255,0.5);"></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group"><label>Check-in</label><input type="date" id="fechaIn"></div>
+                <div class="form-group"><label>Check-out</label><input type="date" id="fechaOut"></div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-success" onclick="guardarReserva()" style="flex:1">💾 Guardar</button>
+                <button class="btn btn-danger" onclick="liberarHabitacion()" style="flex:1">🚪 Liberar</button>
+            </div>
+            <button class="btn" onclick="cerrarModal()" style="width:100%; margin-top:10px; background:#eee;">Cancelar</button>
         </div>
     </div>
 
@@ -86,64 +90,108 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
 
-        // Datos simulados para la vista dinámica
+        // Datos simulados para la demo visual
         const rooms = [
-            { num: '101', status: 'libre' },
-            { num: '102', status: 'ocupada' },
-            { num: '103', status: 'libre' },
-            { num: '104', status: 'ocupada' },
-            { num: '201', status: 'libre' },
-            { num: '202', status: 'ocupada' },
+            { num: '101', type: 'Standard' }, { num: '102', type: 'Standard' },
+            { num: '103', type: 'Deluxe' }, { num: '104', type: 'Deluxe' },
+            { num: '201', type: 'Suite' }, { num: '202', type: 'Suite' },
         ];
 
-        const reservations = [
-            { room: '102', guest: 'Juan Pérez', start: 1, length: 3, color: '#667eea' },
-            { room: '104', guest: 'Familia Torres', start: 0, length: 5, color: '#764ba2' },
-            { room: '202', guest: 'Ana García', start: 2, length: 2, color: '#28a745' },
+        let reservations = [
+            { room: '101', guest: 'Juan Pérez', start: 0, length: 3 },
+            { room: '103', guest: 'Familia Torres (4)', start: 1, length: 4 },
+            { room: '201', guest: 'Ana García', start: 2, length: 2 },
         ];
+
+        let habSeleccionada = null;
 
         function renderTimeline() {
             const header = document.getElementById('diasHeader');
             const body = document.getElementById('timelineBody');
             
-            // Renderizar días (Lun - Dom)
+            // Días
             let daysHtml = '';
-            ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => {
+            ['Lun 01', 'Mar 02', 'Mié 03', 'Jue 04', 'Vie 05', 'Sáb 06', 'Dom 07'].forEach(d => {
                 daysHtml += `<div class="timeline-day">${d}</div>`;
             });
             header.innerHTML = daysHtml;
 
-            // Renderizar filas de habitaciones
+            // Habitaciones
             let rowsHtml = '';
             rooms.forEach(r => {
                 let bars = '';
-                reservations.filter(res => res.room === r.num).forEach(res => {
-                    // Cálculo simple de posición para la demo
+                const resInRoom = reservations.filter(res => res.room === r.num);
+                
+                resInRoom.forEach(res => {
                     let left = (res.start * 14.28) + '%'; 
                     let width = (res.length * 14.28) + '%';
-                    bars += `<div class="reservation-bar" style="left:${left}; width:${width}; background:${res.color};" onclick="verDetalle('${res.guest}')">
-                        ${res.guest}
+                    bars += `<div class="reservation-bar" style="left:${left}; width:${width};" onclick="abrirModal('${r.num}', '${res.guest}', ${res.start}, ${res.length})">
+                        <span>${res.guest}</span>
                     </div>`;
                 });
+
+                // Si no hay reserva, permitir clic para crear nueva
+                let clickAction = resInRoom.length === 0 ? `onclick="abrirModal('${r.num}', '', -1, 0)"` : '';
 
                 rowsHtml += `
                     <div class="room-row">
                         <div class="room-label">
-                            <div class="room-status-dot ${r.status === 'libre' ? 'dot-libre' : 'dot-ocupada'}"></div>
-                            ${r.num}
+                            <div style="width:12px; height:12px; border-radius:50%; background:${resInRoom.length ? '#dc3545' : '#28a745'}"></div>
+                            <div>
+                                <div>${r.num}</div>
+                                <div class="room-type">${r.type}</div>
+                            </div>
                         </div>
-                        <div class="timeline-track">${bars}</div>
+                        <div class="timeline-track" ${clickAction}>${bars}</div>
                     </div>
                 `;
             });
             body.innerHTML = rowsHtml;
         }
 
-        function verDetalle(guest) {
-            document.getElementById('modalDetalle').style.display = 'block';
-            document.getElementById('modalGuest').textContent = guest;
-            document.getElementById('modalDates').textContent = '01 Sep - 05 Sep • 2 Huéspedes';
+        function abrirModal(num, guest, start, length) {
+            habSeleccionada = num;
+            document.getElementById('modalGestion').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Habitación ' + num;
+            document.getElementById('listaHuespedes').value = guest;
+            
+            // Fechas simuladas para la demo
+            document.getElementById('fechaIn').value = '2026-09-01';
+            document.getElementById('fechaOut').value = '2026-09-05';
+            
+            const statusSpan = document.getElementById('modalStatus');
+            if(guest) {
+                statusSpan.textContent = 'OCUPADA';
+                statusSpan.style.background = '#ffebee';
+                statusSpan.style.color = '#c62828';
+            } else {
+                statusSpan.textContent = 'DISPONIBLE';
+                statusSpan.style.background = '#e8f5e9';
+                statusSpan.style.color = '#2e7d32';
+            }
         }
+
+        function guardarReserva() {
+            const guest = document.getElementById('listaHuespedes').value;
+            if(!guest) return alert('Ingrese al menos un huésped');
+            
+            // Actualizar datos simulados
+            reservations = reservations.filter(r => r.room !== habSeleccionada);
+            reservations.push({ room: habSeleccionada, guest: guest.split('\n')[0], start: 0, length: 3 });
+            
+            cerrarModal();
+            renderTimeline();
+            alert('✅ Reserva registrada exitosamente');
+        }
+
+        function liberarHabitacion() {
+            reservations = reservations.filter(r => r.room !== habSeleccionada);
+            cerrarModal();
+            renderTimeline();
+            alert('✅ Habitación liberada');
+        }
+
+        function cerrarModal() { document.getElementById('modalGestion').style.display = 'none'; }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
