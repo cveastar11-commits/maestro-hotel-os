@@ -20,7 +20,15 @@ function renderNav(activePage) {
     if (!navContainer) return;
 
     let html = '';
-    menuItems.forEach(item => {
+    const menuItems = [
+    { name: 'Inicio', url: 'index.html', icon: '🏠' }, // NUEVO: Volver al Hub
+    { name: 'Front Desk', url: 'guests.html', icon: '👥' },
+    { name: 'Habitaciones', url: 'rooms.html', icon: '🛏️' },
+    { name: 'Inventario', url: 'inventory.html', icon: '📦' },
+    { name: 'Contabilidad', url: 'accounting.html', icon: '💰' },
+    { name: 'Facturación', url: 'billing.html', icon: '💳' },
+    { name: 'Reportes', url: 'reports.html', icon: '📈' }
+];.forEach(item => {
         const isActive = item.url === activePage ? 'active' : '';
         html += `<a href="${item.url}" class="${isActive}">${item.icon} ${item.name}</a>`;
     });
