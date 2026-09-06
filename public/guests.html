@@ -2,44 +2,97 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Front Desk - Maestro Hotel OS</title>
+    <title>Front Desk Pro - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        .timeline-grid { display: grid; grid-template-columns: 100px repeat(7, 1fr); gap: 1px; background: #eee; border: 1px solid #eee; border-radius: 8px; overflow: hidden; margin-top: 20px; }
-        .grid-header { background: #667eea; color: white; padding: 10px; text-align: center; font-weight: bold; }
-        .grid-cell { background: white; padding: 15px; min-height: 60px; position: relative; }
-        .room-name { background: #f8f9fa; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .status-card { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: transform 0.2s; }
+        .status-card:hover { transform: translateX(5px); }
+        .checkin { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .checkout { background: #e8f5e9; border-left: 4px solid #4caf50; }
+        .pending { background: #fff3e0; border-left: 4px solid #ff9800; }
         
-        .reserva-chip { 
-            background: linear-gradient(135deg, #667eea, #764ba2); 
-            color: white; padding: 5px 10px; border-radius: 4px; 
-            font-size: 12px; margin-bottom: 5px; cursor: pointer; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn-active { background: #28a745 !important; }
+        .room-status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .clean { background: #c8e6c9; color: #2e7d32; }
+        .dirty { background: #ffcdd2; color: #c62828; }
+        .maintenance { background: #ffe0b2; color: #ef6c00; }
+
+        .action-btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 10px; }
+        .btn-checkin { background: #2196f3; color: white; }
+        .btn-checkout { background: #4caf50; color: white; }
+        .btn-service { background: #9c27b0; color: white; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏨 Maestro Hotel OS</h1>
+        <h1>🏨 Maestro Hotel OS | Front Desk</h1>
         <div class="nav" id="mainNav"></div>
     </div>
 
     <div class="container">
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>📅 Front Desk (Vista Semanal)</h3>
-                <div>
-                    <button class="btn btn-primary view-btn" onclick="cambiarVista('diario', this)">Diario</button>
-                    <button class="btn btn-primary view-btn btn-active" onclick="cambiarVista('semanal', this)">Semanal</button>
-                    <button class="btn btn-primary view-btn" onclick="cambiarVista('mensual', this)">Mensual</button>
+        <div class="dashboard-grid">
+            <!-- COLUMNA IZQUIERDA: OPERACIONES -->
+            <div>
+                <div class="card">
+                    <h3>📋 Movimientos Programados para Hoy</h3>
+                    <div id="listaMovimientos">
+                        <div class="status-card checkin" onclick="abrirModal('checkin', 'Juan Pérez', '102')">
+                            <strong>✅ Check-in: Juan Pérez</strong><br>
+                            <small>Hab. 102 (Standard) • 2 Huéspedes • 14:00 PM</small>
+                        </div>
+                        <div class="status-card checkout" onclick="abrirModal('checkout', 'Ana García', '201')">
+                            <strong>🚪 Check-out: Ana García</strong><br>
+                            <small>Hab. 201 (Deluxe) • Pendiente de Facturación</small>
+                        </div>
+                        <div class="status-card pending" onclick="abrirModal('service', 'Hab. 305')">
+                            <strong>🛠️ Mantenimiento: Hab. 305</strong><br>
+                            <small>Reporte: Fuga de agua en baño • Coord. con Limpieza</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🗺️ Estado de Habitaciones (Coord. Limpieza)</h3>
+                    <table>
+                        <thead><tr><th>Hab.</th><th>Tipo</th><th>Estado Físico</th><th>Acción</th></tr></thead>
+                        <tbody>
+                            <tr><td>101</td><td>Standard</td><td><span class="room-status-badge clean">✨ Limpia</span></td><td><button class="btn btn-primary" style="padding:5px;">Ver</button></td></tr>
+                            <tr><td>102</td><td>Standard</td><td><span class="room-status-badge dirty">🧹 Sucia</span></td><td><button class="btn btn-success" style="padding:5px;">Notificar Limpio</button></td></tr>
+                            <tr><td>201</td><td>Deluxe</td><td><span class="room-status-badge clean">✨ Limpia</span></td><td><button class="btn btn-primary" style="padding:5px;">Ver</button></td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Grid Visual -->
-            <div class="timeline-grid" id="calendarioGrid">
-                <!-- Se llena con JS -->
+            <!-- COLUMNA DERECHA: ACCIONES RÁPIDAS -->
+            <div>
+                <div class="card">
+                    <h3>⚡ Acciones de Recepción</h3>
+                    <button class="action-btn btn-checkin" onclick="alert('Iniciar proceso de Check-in')">📥 Nuevo Check-in</button>
+                    <button class="action-btn btn-checkout" onclick="alert('Procesar Check-out y Factura')">📤 Procesar Check-out</button>
+                    <button class="action-btn btn-service" onclick="alert('Registrar Petición Especial')">💬 Registrar Petición</button>
+                    <button class="action-btn" style="background:#607d8b; color:white;" onclick="alert('Ver Mapa de Habitaciones')">🗺️ Ver Mapa Completo</button>
+                </div>
+
+                <div class="card">
+                    <h3>📊 Ocupación Actual</h3>
+                    <div style="text-align:center; padding:20px;">
+                        <div style="font-size:40px; font-weight:bold; color:#667eea;">75%</div>
+                        <p style="color:#666;">12 de 16 habitaciones ocupadas</p>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Gestión -->
+    <div id="modalOperacion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="background:white; margin:10% auto; padding:30px; border-radius:15px; width:400px;">
+            <h3 id="tituloModal">Operación</h3>
+            <p id="detalleModal">Detalle...</p>
+            <textarea placeholder="Notas internas o peticiones del huésped..." style="width:100%; height:80px; margin:10px 0; padding:10px; border:1px solid #ccc; border-radius:5px;"></textarea>
+            <button class="btn btn-success" onclick="document.getElementById('modalOperacion').style.display='none'" style="width:100%">Confirmar Acción</button>
+            <button class="btn btn-danger" onclick="document.getElementById('modalOperacion').style.display='none'" style="width:100%; margin-top:10px;">Cancelar</button>
         </div>
     </div>
 
@@ -47,47 +100,11 @@
     <script>renderNav('guests.html');</script>
 
     <script>
-        // Datos de ejemplo
-        const rooms = ['101', '102', '103', '104', '201', '202'];
-        const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-        
-        const reservas = [
-            { hab: '101', dia: 0, nombre: 'Juan Pérez' },
-            { hab: '102', dia: 2, nombre: 'Ana García' },
-            { hab: '201', dia: 4, nombre: 'Carlos Ruiz' }
-        ];
-
-        function renderGrid() {
-            const grid = document.getElementById('calendarioGrid');
-            let html = '<div class="grid-header">Hab.</div>';
-            
-            // Encabezados de días
-            dias.forEach(d => html += `<div class="grid-header">${d}</div>`);
-            
-            // Filas de habitaciones
-            rooms.forEach(hab => {
-                html += `<div class="grid-cell room-name">${hab}</div>`;
-                for(let i=0; i<7; i++) {
-                    let contenido = '';
-                    const res = reservas.find(r => r.hab === hab && r.dia === i);
-                    if(res) {
-                        contenido = `<div class="reserva-chip" onclick="alert('Editar reserva de ${res.nombre}')">${res.nombre}</div>`;
-                    } else {
-                        contenido = `<div style="color:#ccc; font-size:10px; cursor:pointer;" onclick="alert('Nueva reserva en ${hab}')">+ Libre</div>`;
-                    }
-                    html += `<div class="grid-cell">${contenido}</div>`;
-                }
-            });
-            grid.innerHTML = html;
+        function abrirModal(tipo, nombre, detalle) {
+            document.getElementById('modalOperacion').style.display = 'block';
+            document.getElementById('tituloModal').textContent = tipo.toUpperCase();
+            document.getElementById('detalleModal').innerHTML = `<strong>${nombre}</strong><br>${detalle || ''}`;
         }
-
-        function cambiarVista(vista, btn) {
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('btn-active'));
-            btn.classList.add('btn-active');
-            alert(`Cambiando a vista: ${vista} (Simulación visual)`);
-        }
-
-        renderGrid();
     </script>
 </body>
 </html>
