@@ -2,19 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Maestro Hotel OS - Centro de Control</title>
+    <title>Centro de Control - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        .hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
-        .hub-card { background: white; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .hub-card:hover { transform: translateY(-5px); border-color: #667eea; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
-        .hub-icon { font-size: 40px; margin-bottom: 15px; display: block; }
-        .hub-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px; }
-        .hub-desc { font-size: 13px; color: #666; }
+        .dashboard-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         
-        body.dark-mode .hub-card { background: #1e1e1e; border-color: #333; }
-        body.dark-mode .hub-card:hover { border-color: #667eea; }
-        body.dark-mode .hub-title { color: #fff; }
+        /* Estilos del Calendario Visual */
+        .calendario-mini { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
+        .dia-celda { background: white; padding: 10px; text-align: center; border-radius: 6px; font-size: 13px; position: relative; min-height: 60px; border: 1px solid #eee; }
+        .dia-celda.hoy { border: 2px solid #667eea; font-weight: bold; }
+        .punto-ocupacion { width: 8px; height: 8px; background: #dc3545; border-radius: 50%; margin: 2px auto; }
+        
+        /* Mapa de Ocupación Circular */
+        .ocupacion-visual { text-align: center; padding: 20px; }
+        .circulo-progreso { 
+            width: 150px; height: 150px; border-radius: 50%; 
+            background: conic-gradient(#667eea 85%, #eee 0); 
+            margin: 0 auto; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: bold; color: #333;
+        }
+        
+        body.dark-mode .dia-celda { background: #2d2d2d; border-color: #444; }
+        body.dark-mode .circulo-progreso { background: conic-gradient(#667eea 85%, #333 0); color: white; }
     </style>
 </head>
 <body>
@@ -24,55 +33,68 @@
     </div>
 
     <div class="container">
-        <div style="text-align: center; margin-top: 20px;">
-            <h2>Bienvenido al Centro de Control</h2>
-            <p style="color: #666;">Seleccione un módulo para comenzar a operar</p>
-        </div>
+        <div class="dashboard-layout">
+            
+            <!-- COLUMNA IZQUIERDA: CALENDARIO Y ACCIONES -->
+            <div>
+                <div class="card">
+                    <h3>📅 Calendario de Ocupación (Septiembre 2026)</h3>
+                    <div class="calendario-mini" id="calendarioHub">
+                        <!-- Se llena con JS -->
+                    </div>
+                </div>
 
-        <div class="hub-grid">
-            <!-- RAMA: OPERACIONES -->
-            <div class="hub-card" onclick="window.location.href='guests.html'">
-                <span class="hub-icon">👥</span>
-                <div class="hub-title">Front Desk</div>
-                <div class="hub-desc">Check-in, Check-out y Asignación de Habitaciones</div>
+                <div class="card">
+                    <h3>⚡ Acciones Rápidas (Botones Habilitados)</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-primary" onclick="irA('guests.html')">📥 Check-in Rápido</button>
+                        <button class="btn btn-danger" onclick="irA('billing.html')">💳 Nueva Factura</button>
+                        <button class="btn btn-success" onclick="irA('rooms.html')">🛏️ Ver Habitaciones</button>
+                        <button class="btn" style="background:#ffc107; color:#333;" onclick="irA('reports.html')">📈 Reporte Diario</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="hub-card" onclick="window.location.href='rooms.html'">
-                <span class="hub-icon">🛏️</span>
-                <div class="hub-title">Habitaciones</div>
-                <div class="hub-desc">Gestión de Tipos, Capacidad y Mantenimiento</div>
-            </div>
+            <!-- COLUMNA DERECHA: ESTADO DEL HOTEL -->
+            <div>
+                <div class="card ocupacion-visual">
+                    <h3>Ocupación Actual</h3>
+                    <div class="circulo-progreso">85%</div>
+                    <p style="margin-top:10px; color:#666;">17 de 20 Habitaciones Vendidas</p>
+                </div>
 
-            <!-- RAMA: FINANZAS -->
-            <div class="hub-card" onclick="window.location.href='billing.html'">
-                <span class="hub-icon">💳</span>
-                <div class="hub-title">Facturación</div>
-                <div class="hub-desc">Cobros, Depósitos y Emisión de Facturas</div>
-            </div>
-
-            <div class="hub-card" onclick="window.location.href='accounting.html'">
-                <span class="hub-icon">💰</span>
-                <div class="hub-title">Contabilidad</div>
-                <div class="hub-desc">Asientos Contables, Balance y Resultados</div>
-            </div>
-
-            <!-- RAMA: LOGÍSTICA -->
-            <div class="hub-card" onclick="window.location.href='inventory.html'">
-                <span class="hub-icon">📦</span>
-                <div class="hub-title">Inventario</div>
-                <div class="hub-desc">Control de Stock, Proveedores y Consumibles</div>
-            </div>
-
-            <!-- RAMA: INTELIGENCIA -->
-            <div class="hub-card" onclick="window.location.href='reports.html'">
-                <span class="hub-icon">📈</span>
-                <div class="hub-title">Reportes</div>
-                <div class="hub-desc">Estadísticas de Ocupación, Ingresos y Tendencias</div>
+                <div class="card">
+                    <h3>🔔 Alertas Recientes</h3>
+                    <ul style="list-style:none; padding:0;">
+                        <li style="padding:10px; border-bottom:1px solid #eee;">⚠️ Hab. 102 requiere limpieza</li>
+                        <li style="padding:10px; border-bottom:1px solid #eee;">✅ Check-in: Familia Pérez (14:00)</li>
+                        <li style="padding:10px;">💰 Pago recibido: Hab. 201 ($150)</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="nav.js"></script>
     <script>renderNav('index.html');</script>
+
+    <script>
+        // Función para navegar
+        function irA(url) { window.location.href = url; }
+
+        // Generar Calendario Visual
+        const calContainer = document.getElementById('calendarioHub');
+        let html = '';
+        for(let i=1; i<=30; i++) {
+            let clase = (i === 7) ? 'dia-celda hoy' : 'dia-celda'; // Simulamos que hoy es 7
+            let puntos = '';
+            // Simulamos ocupación aleatoria
+            if(i % 2 === 0) puntos = '<div class="punto-ocupacion"></div><div class="punto-ocupacion"></div>';
+            if(i % 3 === 0) puntos += '<div class="punto-ocupacion" style="background:#28a745"></div>';
+            
+            html += `<div class="${clase}"><strong>${i}</strong>${puntos}</div>`;
+        }
+        calContainer.innerHTML = html;
+    </script>
 </body>
 </html>

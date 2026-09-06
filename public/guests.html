@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <title>Front Desk - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .action-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .status-badge { padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
-        .bg-green { background: #d4edda; color: #155724; }
-        .bg-red { background: #f8d7da; color: #721c24; }
-    </style>
 </head>
 <body>
     <div class="header">
@@ -18,103 +12,32 @@
     </div>
 
     <div class="container">
-        <!-- ACCIONES PRINCIPALES -->
         <div class="card">
-            <h3>⚡ Acciones de Recepción</h3>
-            <div class="action-panel">
-                <button class="btn btn-primary" style="height: 60px; font-size: 16px;" onclick="abrirFormulario('checkin')">
-                    📥 REGISTRAR CHECK-IN (Entrada)
-                </button>
-                <button class="btn btn-danger" style="height: 60px; font-size: 16px;" onclick="abrirFormulario('checkout')">
-                    📤 PROCESAR CHECK-OUT (Salida)
-                </button>
+            <h3>⚡ Operaciones de Recepción</h3>
+            <div style="display:flex; gap:15px; margin-bottom:20px;">
+                <button class="btn btn-primary" style="flex:1; padding:15px;" onclick="procesar('checkin')">📥 REGISTRAR CHECK-IN</button>
+                <button class="btn btn-danger" style="flex:1; padding:15px;" onclick="procesar('checkout')">📤 PROCESAR CHECK-OUT</button>
             </div>
-        </div>
-
-        <!-- LISTA DE HUÉSPEDES ACTIVOS -->
-        <div class="card">
-            <h3>👥 Huéspedes Actualmente en el Hotel</h3>
+            
             <table>
-                <thead><tr><th>Hab.</th><th>Huésped</th><th>Entrada</th><th>Salida Est.</th><th>Estado</th></tr></thead>
-                <tbody id="tablaHuespedes">
-                    <!-- Se llena con JS -->
+                <thead><tr><th>Hab.</th><th>Huésped</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr><td>101</td><td>Juan Pérez</td><td>01/09</td><td>05/09</td><td><span style="color:green">✅ Hospedado</span></td></tr>
+                    <tr><td>102</td><td>-</td><td>-</td><td>-</td><td><span style="color:orange">🧹 Limpieza</span></td></tr>
+                    <tr><td>103</td><td>Ana García</td><td>03/09</td><td>08/09</td><td><span style="color:green">✅ Hospedado</span></td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- MODAL DE REGISTRO DE DATOS -->
-    <div id="modalRegistro" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999;">
-        <div style="background:white; margin:5% auto; padding:30px; border-radius:15px; width:500px;">
-            <h3 id="tituloModal">Registro</h3>
-            <form id="formAccion">
-                <div class="form-group"><label>Nombre del Huésped</label><input type="text" id="inputNombre" required></div>
-                <div class="form-row">
-                    <div class="form-group"><label>Habitación</label><input type="text" id="inputHab" required></div>
-                    <div class="form-group"><label>Fecha</label><input type="date" id="inputFecha" required></div>
-                </div>
-                <button type="submit" class="btn btn-success" style="width:100%">✅ Confirmar Acción</button>
-                <button type="button" onclick="cerrarModal()" class="btn btn-danger" style="width:100%; margin-top:10px;">Cancelar</button>
-            </form>
-        </div>
-    </div>
-
     <script src="nav.js"></script>
     <script>renderNav('guests.html');</script>
-
+    
     <script>
-        // Datos simulados en memoria
-        let huespedes = [
-            { hab: '101', nombre: 'Juan Pérez', in: '2026-09-01', out: '2026-09-05' },
-            { hab: '205', nombre: 'Ana García', in: '2026-09-03', out: '2026-09-07' }
-        ];
-
-        function renderTabla() {
-            const tbody = document.getElementById('tablaHuespedes');
-            tbody.innerHTML = huespedes.map(h => `
-                <tr>
-                    <td><strong>${h.hab}</strong></td>
-                    <td>${h.nombre}</td>
-                    <td>${h.in}</td>
-                    <td>${h.out}</td>
-                    <td><span class="status-badge bg-green">Hospedado</span></td>
-                </tr>
-            `).join('');
+        function procesar(tipo) {
+            if(tipo === 'checkin') alert('✅ Abriendo formulario de Check-in...');
+            if(tipo === 'checkout') alert('✅ Abriendo formulario de Check-out y Facturación...');
         }
-
-        let accionActual = '';
-
-        function abrirFormulario(tipo) {
-            accionActual = tipo;
-            document.getElementById('modalRegistro').style.display = 'block';
-            document.getElementById('tituloModal').textContent = tipo === 'checkin' ? '📥 Registrar Entrada' : '📤 Procesar Salida';
-            document.getElementById('inputFecha').valueAsDate = new Date();
-        }
-
-        function cerrarModal() {
-            document.getElementById('modalRegistro').style.display = 'none';
-            document.getElementById('formAccion').reset();
-        }
-
-        document.getElementById('formAccion').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const nombre = document.getElementById('inputNombre').value;
-            const hab = document.getElementById('inputHab').value;
-            const fecha = document.getElementById('inputFecha').value;
-
-            if (accionActual === 'checkin') {
-                huespedes.push({ hab: hab, nombre: nombre, in: fecha, out: 'Pendiente' });
-                alert(`✅ Check-in realizado: ${nombre} en Hab. ${hab}`);
-            } else {
-                huespedes = huespedes.filter(h => h.hab !== hab);
-                alert(`✅ Check-out procesado: Habitación ${hab} liberada.`);
-            }
-            
-            cerrarModal();
-            renderTabla();
-        });
-
-        renderTabla();
     </script>
 </body>
 </html>
