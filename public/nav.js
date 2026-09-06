@@ -4,34 +4,39 @@ if (!token) {
     window.location.href = '/login.html';
 }
 
-// Configuración del menú con botón de regreso integrado
-const menuItems = [
-    { name: '🏠 Inicio', url: 'index.html' }, // Botón de Regreso Principal
-    { name: 'Front Desk', url: 'guests.html' },
-    { name: 'Habitaciones', url: 'rooms.html' },
-    { name: 'Inventario', url: 'inventory.html' },
-    { name: 'Contabilidad', url: 'accounting.html' },
-    { name: 'Facturación', url: 'billing.html' },
-    { name: 'Reportes', url: 'reports.html' }
-];
-
 function renderNav(activePage) {
     const navContainer = document.getElementById('mainNav');
     if (!navContainer) return;
 
     let html = '';
     
-    // 1. Botón de Regreso Destacado (Si no estamos ya en Inicio)
-    if (activePage !== 'index.html' && activePage !== 'login.html') {
-        html += `<a href="index.html" style="background:rgba(255,255,255,0.2); margin-right:10px;">⬅️ Regresar</a>`;
+    // 1. BOTÓN DE REGRESO UNIVERSAL AL HUB
+    if (activePage !== 'index.html') {
+        html += `<a href="index.html" class="back-btn">⬅️ Volver al Hub</a>`;
     }
 
-    // 2. Resto del menú
-    menuItems.forEach(item => {
-        if (item.url === 'index.html') return; // Ya pusimos el inicio arriba como "Regresar"
-        const isActive = item.url === activePage ? 'active' : '';
-        html += `<a href="${item.url}" class="${isActive}">${item.name}</a>`;
-    });
+    // 2. Menú de Navegación (Solo si NO estamos en el Hub para no redundar)
+    if (activePage !== 'index.html') {
+        html += `
+            <a href="index.html">🏠 Inicio</a>
+            <a href="guests.html">👥 Front Desk</a>
+            <a href="rooms.html">🛏️ Habitaciones</a>
+            <a href="inventory.html">📦 Inventario</a>
+            <a href="accounting.html">💰 Contabilidad</a>
+            <a href="billing.html">💳 Facturación</a>
+            <a href="reports.html">📈 Reportes</a>
+        `;
+    } else {
+        // Si estamos en el Hub, mostramos los enlaces normales
+        html += `
+            <a href="guests.html">👥 Front Desk</a>
+            <a href="rooms.html">🛏️ Habitaciones</a>
+            <a href="inventory.html">📦 Inventario</a>
+            <a href="accounting.html">💰 Contabilidad</a>
+            <a href="billing.html">💳 Facturación</a>
+            <a href="reports.html">📈 Reportes</a>
+        `;
+    }
     
     // 3. Utilidades
     html += `
