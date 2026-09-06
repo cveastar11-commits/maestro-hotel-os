@@ -5,16 +5,14 @@
     <title>Front Desk - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Estilos ESPECÍFICOS para que el Front Desk se vea bien */
-        .timeline-container { overflow-x: auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-top: 20px; }
+        /* Estilos para la línea de tiempo */
+        .timeline-container { overflow-x: auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-top: 20px; min-height: 300px; }
         .timeline-header { display: flex; margin-bottom: 10px; padding-left: 100px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .timeline-day { flex: 1; text-align: center; font-weight: bold; color: #667eea; min-width: 60px; }
         
         .room-row { display: flex; align-items: center; margin-bottom: 15px; position: relative; height: 50px; }
-        .room-label { width: 100px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .dot-libre { background: #28a745; }
-        .dot-ocupada { background: #dc3545; }
+        .room-label { width: 100px; font-weight: bold; color: #333; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .room-label:hover { color: #667eea; }
         
         .timeline-track { flex: 1; position: relative; height: 100%; background: #f9f9f9; border-radius: 8px; }
         
@@ -23,26 +21,50 @@
             background: linear-gradient(90deg, #667eea, #764ba2); 
             border-radius: 6px; color: white; font-size: 12px; font-weight: 600;
             display: flex; align-items: center; padding: 0 10px; 
-            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 10;
         }
         .reservation-bar:hover { transform: scale(1.05); z-index: 20; }
+
+        /* Botones de pestañas activos */
+        .btn-active { background: #28a745 !important; transform: scale(1.05); }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🏨 TURQUEZA HOME INN</h1>
-        <!-- Aquí inyectamos el menú automáticamente -->
+        <h1>🏨 Maestro Hotel OS</h1>
         <div class="nav" id="mainNav"></div>
     </div>
 
     <div class="container">
         <div class="card">
-            <h3>📅 Vista de Ocupación Semanal</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>📅 Calendario de Ocupación</h3>
+                <div>
+                    <!-- PESTAÑAS INTERACTIVAS -->
+                    <button class="btn btn-primary view-btn" onclick="cambiarVista('diario', this)">Diario</button>
+                    <button class="btn btn-primary view-btn btn-active" onclick="cambiarVista('semanal', this)">Semanal</button>
+                    <button class="btn btn-primary view-btn" onclick="cambiarVista('mensual', this)">Mensual</button>
+                </div>
+            </div>
+            
             <div class="timeline-container">
                 <div class="timeline-header" id="diasHeader"></div>
                 <div id="timelineBody"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Gestión -->
+    <div id="modalGestion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999;">
+        <div style="background:white; margin:10% auto; padding:30px; border-radius:15px; width:400px;">
+            <h3 id="modalTitle">Habitación</h3>
+            <div class="form-group"><label>Huéspedes</label><textarea id="modalGuests" rows="3"></textarea></div>
+            <div class="form-row">
+                <div class="form-group"><label>Entrada</label><input type="date" id="modalIn"></div>
+                <div class="form-group"><label>Salida</label><input type="date" id="modalOut"></div>
+            </div>
+            <button class="btn btn-success" onclick="guardarReserva()" style="width:100%">Guardar</button>
+            <button class="btn btn-danger" onclick="document.getElementById('modalGestion').style.display='none'" style="width:100%; margin-top:10px;">Cerrar</button>
         </div>
     </div>
 
@@ -53,49 +75,66 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
 
-        // Datos de ejemplo para visualizar
+        // Datos simulados
         const rooms = [
-            { num: '101', status: 'libre' },
-            { num: '102', status: 'ocupada' },
-            { num: '103', status: 'libre' },
-            { num: '104', status: 'ocupada' },
-            { num: '201', status: 'libre' },
-            { num: '202', status: 'ocupada' },
+            { num: '101', status: 'libre' }, { num: '102', status: 'ocupada' },
+            { num: '103', status: 'libre' }, { num: '104', status: 'ocupada' },
+            { num: '201', status: 'libre' }, { num: '202', status: 'ocupada' },
         ];
 
-        const reservations = [
+        let reservations = [
             { room: '102', guest: 'Juan Pérez', start: 1, length: 3 },
             { room: '104', guest: 'Familia Torres', start: 0, length: 5 },
             { room: '202', guest: 'Ana García', start: 2, length: 2 },
         ];
 
+        let vistaActual = 'semanal';
+
+        function cambiarVista(vista, btn) {
+            vistaActual = vista;
+            
+            // Actualizar estilo de botones
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('btn-active'));
+            btn.classList.add('btn-active');
+            
+            renderTimeline();
+        }
+
         function renderTimeline() {
             const header = document.getElementById('diasHeader');
             const body = document.getElementById('timelineBody');
-            
-            if (!header || !body) return; // Seguridad por si no carga
+            if (!header || !body) return;
 
-            // Renderizar días
             let daysHtml = '';
-            ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => {
-                daysHtml += `<div class="timeline-day">${d}</div>`;
-            });
+            let numDays = 7; // Por defecto semanal
+            
+            if (vistaActual === 'diario') {
+                daysHtml = '<div class="timeline-day" style="flex:1">HOY</div>';
+                numDays = 1;
+            } else if (vistaActual === 'mensual') {
+                for(let i=1; i<=15; i++) daysHtml += `<div class="timeline-day">${i}</div>`;
+                numDays = 15;
+            } else {
+                ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].forEach(d => daysHtml += `<div class="timeline-day">${d}</div>`);
+            }
             header.innerHTML = daysHtml;
 
-            // Renderizar filas
             let rowsHtml = '';
             rooms.forEach(r => {
                 let bars = '';
                 reservations.filter(res => res.room === r.num).forEach(res => {
-                    let left = (res.start * 14.28) + '%'; 
-                    let width = (res.length * 14.28) + '%';
-                    bars += `<div class="reservation-bar" style="left:${left}; width:${width};">${res.guest}</div>`;
+                    let step = 100 / numDays;
+                    let left = (res.start * step) + '%'; 
+                    let width = (res.length * step) + '%';
+                    if (left < '100%') {
+                        bars += `<div class="reservation-bar" style="left:${left}; width:${width};" onclick="abrirModal('${r.num}', '${res.guest}')">${res.guest}</div>`;
+                    }
                 });
 
                 rowsHtml += `
                     <div class="room-row">
-                        <div class="room-label">
-                            <div class="status-dot ${r.status === 'libre' ? 'dot-libre' : 'dot-ocupada'}"></div>
+                        <div class="room-label" onclick="abrirModal('${r.num}', '')">
+                            <div style="width:10px; height:10px; border-radius:50%; background:${r.status==='libre'?'#28a745':'#dc3545'}"></div>
                             ${r.num}
                         </div>
                         <div class="timeline-track">${bars}</div>
@@ -105,9 +144,18 @@
             body.innerHTML = rowsHtml;
         }
 
-        // Ejecutar al cargar
+        function abrirModal(num, guest) {
+            document.getElementById('modalGestion').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Habitación ' + num;
+            document.getElementById('modalGuests').value = guest;
+        }
+
+        function guardarReserva() {
+            alert('✅ Reserva guardada (Simulación)');
+            document.getElementById('modalGestion').style.display = 'none';
+        }
+
         renderTimeline();
-    </script><script src="nav.js"></script>
-<script>renderNav('nombre_de_su_archivo.html');</script>
+    </script>
 </body>
 </html>
