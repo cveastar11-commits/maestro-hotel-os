@@ -11,43 +11,38 @@
         <h1>🏨 Maestro Hotel OS</h1>
         <div class="nav">
             <a href="dashboard.html">📊 Dashboard</a>
-            <a href="inventory.html" class="menu-inventario">📦 Inventario</a>
-            <a href="accounting.html" class="menu-contabilidad">💰 Contabilidad</a>
-            <a href="reports.html" class="active menu-reportes">📈 Reportes</a>
-            <a href="users.html" class="menu-usuarios">👥 Usuarios</a>
+            <a href="inventory.html">📦 Inventario</a>
+            <a href="accounting.html">💰 Contabilidad</a>
+            <a href="reports.html" class="active">📈 Reportes</a>
+            <a href="users.html">👥 Usuarios</a>
             <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
             <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
 
     <div class="container">
-        <h2 style="margin-bottom: 25px;">📈 Centro de Reportes</h2>
+        <h2 style="margin-bottom: 25px;">📈 Reportes Financieros</h2>
         
-        <div class="card">
-            <h3>Estado de Resultados Resumido</h3>
-            <div class="summary-box" style="margin-top: 20px;">
-                <div class="summary-card"><h3>Ingresos</h3><div class="amount" id="repIngresos">$0.00</div></div>
-                <div class="summary-card"><h3>Gastos</h3><div class="amount" id="repGastos">$0.00</div></div>
-                <div class="summary-card"><h3>Utilidad</h3><div class="amount" id="repUtilidad">$0.00</div></div>
-            </div>
+        <div class="summary-box">
+            <div class="summary-card"><h3>Ingresos Totales</h3><div class="amount" id="repIngresos">$0.00</div></div>
+            <div class="summary-card"><h3>Gastos Totales</h3><div class="amount" id="repGastos">$0.00</div></div>
+            <div class="summary-card"><h3>Utilidad Neta</h3><div class="amount" id="repUtilidad">$0.00</div></div>
         </div>
 
         <div class="card">
-            <h3>Balance de Comprobación</h3>
-            <table>
-                <thead><tr><th>Cuenta</th><th>Tipo</th><th>Débito</th><th>Crédito</th><th>Saldo</th></tr></thead>
-                <tbody id="tablaBalance"></tbody>
-            </table>
+            <h3>Balance de Comprobación Detallado</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th>Débito</th><th>Crédito</th><th>Saldo</th></tr></thead>
+                    <tbody id="tablaBalance"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
-
-        // Permisos
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        if (userData.role === 'recepcionista') window.location.href = '/dashboard.html';
 
         async function cargarReportes() {
             try {
@@ -61,7 +56,8 @@
                 const balData = await balResp.json();
                 document.getElementById('tablaBalance').innerHTML = balData.map(b => `
                     <tr>
-                        <td>${b.code} - ${b.name}</td>
+                        <td>${b.code}</td>
+                        <td>${b.name}</td>
                         <td>${b.type}</td>
                         <td>$${parseFloat(b.total_debit).toFixed(2)}</td>
                         <td>$${parseFloat(b.total_credit).toFixed(2)}</td>
@@ -80,10 +76,7 @@
             document.body.classList.add('dark-mode');
             document.querySelector('.theme-toggle').textContent = '☀️ Modo Claro';
         }
-
-        function cerrarSesion() {
-            if(confirm('¿Cerrar sesión?')) { localStorage.clear(); window.location.href = '/login.html'; }
-        }
+        function cerrarSesion() { if(confirm('¿Cerrar sesión?')) { localStorage.clear(); window.location.href = '/login.html'; } }
 
         cargarReportes();
     </script>
