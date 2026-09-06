@@ -2,8 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Huéspedes - Maestro Hotel OS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocupación - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos específicos para el mapa de habitaciones */
+        .habitacion-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-top: 20px; }
+        .habitacion-card { padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent; }
+        .habitacion-card:hover { transform: translateY(-3px); }
+        .libre { background: #d4edda; border-color: #28a745; color: #155724; }
+        .ocupada { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .mantenimiento { background: #fff3cd; border-color: #ffc107; color: #856404; }
+        .hab-numero { font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px; }
+        .hab-estado { font-size: 12px; text-transform: uppercase; font-weight: 600; }
+        
+        /* Calendario simple */
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .dia-cell { background: white; padding: 10px; min-height: 80px; border-radius: 5px; border: 1px solid #eee; font-size: 12px; }
+        .dia-numero { font-weight: bold; color: #667eea; margin-bottom: 5px; }
+        .evento { background: #eef; padding: 2px 5px; border-radius: 3px; margin-bottom: 2px; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -12,7 +31,7 @@
             <a href="dashboard.html">📊 Dashboard</a>
             <a href="inventory.html">📦 Inventario</a>
             <a href="accounting.html">💰 Contabilidad</a>
-            <a href="guests.html" class="active">👥 Huéspedes</a>
+            <a href="guests.html" class="active">👥 Ocupación</a>
             <a href="billing.html">💳 Facturación</a>
             <a href="reports.html">📈 Reportes</a>
             <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
@@ -21,22 +40,45 @@
     </div>
 
     <div class="container">
-        <h2>👥 Gestión de Huéspedes y Ocupación</h2>
-        
+        <!-- VISTA DE HABITACIONES -->
         <div class="card">
-            <h3>📅 Calendario de Ocupación (Próximos 7 días)</h3>
-            <div id="calendario" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>🗺️ Mapa de Habitaciones (Tiempo Real)</h3>
+                <div>
+                    <span style="margin-right:15px;">🟢 Libre</span>
+                    <span style="margin-right:15px;">🔴 Ocupada</span>
+                    <span>🟡 Mantenimiento</span>
+                </div>
+            </div>
+            <div class="habitacion-grid" id="mapaHabitaciones">
                 <!-- Se llena con JS -->
             </div>
         </div>
 
+        <!-- VISTA DE CALENDARIO Y LISTA -->
         <div class="card">
-            <h3>🛎️ Registro de Entradas y Salidas</h3>
+            <div class="calendario-header">
+                <h3>📅 Calendario de Ocupación - Septiembre 2026</h3>
+                <div>
+                    <button class="btn btn-primary" style="padding:5px 10px;">Diario</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;">Semanal</button>
+                    <button class="btn btn-primary" style="padding:5px 10px;">Mensual</button>
+                </div>
+            </div>
+            
+            <div class="calendario-grid" id="calendarioVisual">
+                <!-- Se llena con JS -->
+            </div>
+        </div>
+
+        <!-- LISTA DE HUÉSPEDES DEL DÍA -->
+        <div class="card">
+            <h3>📋 Lista de Huéspedes (Check-ins/Outs de Hoy)</h3>
             <table>
-                <thead><tr><th>Huésped</th><th>Habitación</th><th>Check-in</th><th>Check-out</th><th>Estado</th></tr></thead>
-                <tbody id="tablaHuespedes">
-                    <tr><td>Juan Pérez</td><td>101</td><td>01/09/2026</td><td>05/09/2026</td><td><span style="color:green">✅ Hospedado</span></td></tr>
-                    <tr><td>Maria Lopez</td><td>205</td><td>04/09/2026</td><td>08/09/2026</td><td><span style="color:orange">⏳ Próximo</span></td></tr>
+                <thead><tr><th>Huésped</th><th>Hab.</th><th>Tipo</th><th>Fecha</th><th>Estado</th></tr></thead>
+                <tbody id="tablaHoy">
+                    <tr><td>Juan Pérez</td><td>101</td><td>Check-in</td><td>06/09/2026</td><td><span style="color:green">✅ Confirmado</span></td></tr>
+                    <tr><td>Ana García</td><td>205</td><td>Check-out</td><td>06/09/2026</td><td><span style="color:orange">⏳ Pendiente</span></td></tr>
                 </tbody>
             </table>
         </div>
@@ -46,18 +88,43 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
 
-        // Generar calendario simple
-        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const hoy = new Date();
-        let html = '';
-        for(let i=0; i<7; i++) {
-            let fecha = new Date(hoy);
-            fecha.setDate(hoy.getDate() + i);
-            html += `<div style="background:#f0f0f0; padding:15px; border-radius:8px; text-align:center;">
-                <strong>${dias[fecha.getDay()]}</strong><br>${fecha.getDate()}/${fecha.getMonth()+1}
-            </div>`;
+        // Simulación de estado de habitaciones (En un sistema real vendría de la BD)
+        const habitaciones = [
+            { num: '101', status: 'ocupada', huesped: 'J. Pérez' },
+            { num: '102', status: 'libre', huesped: '-' },
+            { num: '103', status: 'libre', huesped: '-' },
+            { num: '104', status: 'mantenimiento', huesped: '-' },
+            { num: '201', status: 'ocupada', huesped: 'L. Torres' },
+            { num: '202', status: 'libre', huesped: '-' },
+            { num: '203', status: 'ocupada', huesped: 'M. López' },
+            { num: '204', status: 'libre', huesped: '-' },
+            { num: '205', status: 'ocupada', huesped: 'A. García' },
+            { num: '301', status: 'libre', huesped: '-' },
+        ];
+
+        function renderizarMapa() {
+            const grid = document.getElementById('mapaHabitaciones');
+            grid.innerHTML = '';
+            habitaciones.forEach(h => {
+                const div = document.createElement('div');
+                div.className = `habitacion-card ${h.status}`;
+                div.innerHTML = `<span class="hab-numero">${h.num}</span><span class="hab-estado">${h.status}</span>`;
+                if(h.huesped !== '-') div.innerHTML += `<br><small>${h.huesped}</small>`;
+                grid.appendChild(div);
+            });
         }
-        document.getElementById('calendario').innerHTML = html;
+
+        function renderizarCalendario() {
+            const cal = document.getElementById('calendarioVisual');
+            let html = '';
+            for(let i=1; i<=30; i++) {
+                let eventos = '';
+                if(i===6) eventos = '<div class="evento">Check-in J. Pérez</div>';
+                if(i===8) eventos = '<div class="evento">Check-out A. García</div>';
+                html += `<div class="dia-cell"><div class="dia-numero">${i}</div>${eventos}</div>`;
+            }
+            cal.innerHTML = html;
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
@@ -69,6 +136,9 @@
             document.querySelector('.theme-toggle').textContent = '☀️ Modo Claro';
         }
         function cerrarSesion() { if(confirm('¿Cerrar sesión?')) { localStorage.clear(); window.location.href = '/login.html'; } }
+
+        renderizarMapa();
+        renderizarCalendario();
     </script>
 </body>
 </html>
