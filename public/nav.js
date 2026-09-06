@@ -1,4 +1,4 @@
-// Verificación de seguridad global
+// Verificación de seguridad
 const token = localStorage.getItem('token');
 if (!token) {
     window.location.href = '/login.html';
@@ -10,35 +10,28 @@ function renderNav(activePage) {
 
     let html = '';
     
-    // 1. BOTÓN DE REGRESO UNIVERSAL AL HUB
+    // Botón de Regreso Universal al Hub
     if (activePage !== 'index.html') {
-        html += `<a href="index.html" class="back-btn">⬅️ Volver al Hub</a>`;
+        html += `<a href="index.html" style="background:rgba(255,255,255,0.2); margin-right:10px;">⬅️ Volver al Hub</a>`;
     }
 
-    // 2. Menú de Navegación (Solo si NO estamos en el Hub para no redundar)
-    if (activePage !== 'index.html') {
-        html += `
-            <a href="index.html">🏠 Inicio</a>
-            <a href="guests.html">👥 Front Desk</a>
-            <a href="rooms.html">🛏️ Habitaciones</a>
-            <a href="inventory.html">📦 Inventario</a>
-            <a href="accounting.html">💰 Contabilidad</a>
-            <a href="billing.html">💳 Facturación</a>
-            <a href="reports.html">📈 Reportes</a>
-        `;
-    } else {
-        // Si estamos en el Hub, mostramos los enlaces normales
-        html += `
-            <a href="guests.html">👥 Front Desk</a>
-            <a href="rooms.html">🛏️ Habitaciones</a>
-            <a href="inventory.html">📦 Inventario</a>
-            <a href="accounting.html">💰 Contabilidad</a>
-            <a href="billing.html">💳 Facturación</a>
-            <a href="reports.html">📈 Reportes</a>
-        `;
-    }
+    // Enlaces del menú
+    const links = [
+        { name: '🏠 Inicio', url: 'index.html' },
+        { name: '👥 Front Desk', url: 'guests.html' },
+        { name: '🛏️ Habitaciones', url: 'rooms.html' },
+        { name: '📦 Inventario', url: 'inventory.html' },
+        { name: '💰 Contabilidad', url: 'accounting.html' },
+        { name: '💳 Facturación', url: 'billing.html' },
+        { name: '📈 Reportes', url: 'reports.html' }
+    ];
+
+    links.forEach(item => {
+        if (item.url === 'index.html' && activePage !== 'index.html') return; // No repetir inicio si ya hay botón volver
+        const isActive = item.url === activePage ? 'active' : '';
+        html += `<a href="${item.url}" class="${isActive}">${item.name}</a>`;
+    });
     
-    // 3. Utilidades
     html += `
         <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
         <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
