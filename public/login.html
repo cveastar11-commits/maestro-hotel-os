@@ -74,7 +74,7 @@
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     // ✅ REDIRECCIÓN AUTOMÁTICA AL DASHBOARD
-                    window.location.href = '/dashboard.html';
+                    window.location.href = '/index.html';
                 } else {
                     // Mostrar error si las credenciales son incorrectas
                     errorMsg.textContent = data.error || 'Credenciales incorrectas';

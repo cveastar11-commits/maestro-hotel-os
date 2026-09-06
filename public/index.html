@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Maestro Hotel OS - Centro de Control</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .hub-card { background: white; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .hub-card:hover { transform: translateY(-5px); border-color: #667eea; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
+        .hub-icon { font-size: 40px; margin-bottom: 15px; display: block; }
+        .hub-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .hub-desc { font-size: 13px; color: #666; }
+        
+        body.dark-mode .hub-card { background: #1e1e1e; border-color: #333; }
+        body.dark-mode .hub-card:hover { border-color: #667eea; }
+        body.dark-mode .hub-title { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏨 Maestro Hotel OS</h1>
+        <div class="nav" id="mainNav"></div>
+    </div>
+
+    <div class="container">
+        <div style="text-align: center; margin-top: 20px;">
+            <h2>Bienvenido al Centro de Control</h2>
+            <p style="color: #666;">Seleccione un módulo para comenzar a operar</p>
+        </div>
+
+        <div class="hub-grid">
+            <!-- RAMA: OPERACIONES -->
+            <div class="hub-card" onclick="window.location.href='guests.html'">
+                <span class="hub-icon">👥</span>
+                <div class="hub-title">Front Desk</div>
+                <div class="hub-desc">Check-in, Check-out y Asignación de Habitaciones</div>
+            </div>
+
+            <div class="hub-card" onclick="window.location.href='rooms.html'">
+                <span class="hub-icon">🛏️</span>
+                <div class="hub-title">Habitaciones</div>
+                <div class="hub-desc">Gestión de Tipos, Capacidad y Mantenimiento</div>
+            </div>
+
+            <!-- RAMA: FINANZAS -->
+            <div class="hub-card" onclick="window.location.href='billing.html'">
+                <span class="hub-icon">💳</span>
+                <div class="hub-title">Facturación</div>
+                <div class="hub-desc">Cobros, Depósitos y Emisión de Facturas</div>
+            </div>
+
+            <div class="hub-card" onclick="window.location.href='accounting.html'">
+                <span class="hub-icon">💰</span>
+                <div class="hub-title">Contabilidad</div>
+                <div class="hub-desc">Asientos Contables, Balance y Resultados</div>
+            </div>
+
+            <!-- RAMA: LOGÍSTICA -->
+            <div class="hub-card" onclick="window.location.href='inventory.html'">
+                <span class="hub-icon">📦</span>
+                <div class="hub-title">Inventario</div>
+                <div class="hub-desc">Control de Stock, Proveedores y Consumibles</div>
+            </div>
+
+            <!-- RAMA: INTELIGENCIA -->
+            <div class="hub-card" onclick="window.location.href='reports.html'">
+                <span class="hub-icon">📈</span>
+                <div class="hub-title">Reportes</div>
+                <div class="hub-desc">Estadísticas de Ocupación, Ingresos y Tendencias</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>renderNav('index.html');</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ if (!token) {
 
 // Configuración del menú
 const menuItems = [
-    { name: 'Dashboard', url: 'dashboard.html', icon: '📊' },
+    { name: 'Inicio', url: 'index.html', icon: '🏠' }, // NUEVO: Volver al Hub
     { name: 'Front Desk', url: 'guests.html', icon: '👥' },
     { name: 'Habitaciones', url: 'rooms.html', icon: '🛏️' },
     { name: 'Inventario', url: 'inventory.html', icon: '📦' },
