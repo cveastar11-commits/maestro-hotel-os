@@ -2,268 +2,73 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    <title>Huéspedes - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; padding: 20px 40px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header h1 { font-size: 24px; }
-        .nav { display: flex; gap: 20px; }
-        .nav a {
-            color: white; text-decoration: none; padding: 8px 16px;
-            border-radius: 8px; transition: background 0.3s;
-        }
-        .nav a:hover { background: rgba(255,255,255,0.2); }
-        .nav a.active { background: rgba(255,255,255,0.3); font-weight: 600; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .logout-btn {
-            background: rgba(255,255,255,0.2); color: white; border: none;
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
-        }
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        
-        .section-title {
-            font-size: 28px; margin-bottom: 30px; color: #333;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .add-btn {
-            background: #667eea; color: white; border: none; padding: 12px 24px;
-            border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;
-        }
-        .add-btn:hover { background: #5568d3; }
-
-        .guests-table {
-            background: white; border-radius: 15px; overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #667eea; color: white; padding: 15px; text-align: left;
-            font-weight: 600;
-        }
-        td { padding: 15px; border-bottom: 1px solid #eee; }
-        tr:hover { background: #f9f9f9; }
-        .delete-btn {
-            background: #dc3545; color: white; border: none; padding: 8px 16px;
-            border-radius: 6px; cursor: pointer; font-size: 14px;
-        }
-        .delete-btn:hover { background: #c82333; }
-
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background: white; margin: 10% auto; padding: 30px; border-radius: 15px;
-            width: 90%; max-width: 500px;
-        }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .close { font-size: 28px; font-weight: bold; cursor: pointer; color: #999; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-group input {
-            width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;
-        }
-        .submit-btn {
-            width: 100%; padding: 12px; background: #667eea; color: white;
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-        }
-        .empty-state {
-            text-align: center; padding: 60px 20px; color: #999;
-        }
-        .empty-state-icon { font-size: 64px; margin-bottom: 20px; }
-    </style>
 </head>
 <body>
     <div class="header">
         <h1>🏨 Maestro Hotel OS</h1>
         <div class="nav">
-    <a href="dashboard.html">Dashboard</a>
-    <a href="guests.html" class="active">Huéspedes</a>
-    <a href="reservations.html">Reservas</a>
-    <a href="reports.html">Reportes</a>
-    <a href="invoices.html">Facturación</a>
-</div>
-        <div class="user-info">
-            <span id="userName"></span>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="inventory.html">📦 Inventario</a>
+            <a href="accounting.html">💰 Contabilidad</a>
+            <a href="guests.html" class="active">👥 Huéspedes</a>
+            <a href="billing.html">💳 Facturación</a>
+            <a href="reports.html">📈 Reportes</a>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
+            <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
 
     <div class="container">
-        <div class="section-title">
-            <span>👥 Gestión de Huéspedes</span>
-            <button class="add-btn" onclick="openModal()">+ Nuevo Huésped</button>
-        </div>
+        <h2>👥 Gestión de Huéspedes y Ocupación</h2>
         
-        <div class="guests-table">
+        <div class="card">
+            <h3>📅 Calendario de Ocupación (Próximos 7 días)</h3>
+            <div id="calendario" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px;">
+                <!-- Se llena con JS -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🛎️ Registro de Entradas y Salidas</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>Documento</th>
-                        <th>Nombre Completo</th>
-                        <th>Email</th>
-                        <th>Teléfono</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="guestsTableBody">
-                    <tr>
-                        <td colspan="5" class="empty-state">
-                            <div class="empty-state-icon">👥</div>
-                            <p>Cargando huéspedes...</p>
-                        </td>
-                    </tr>
+                <thead><tr><th>Huésped</th><th>Habitación</th><th>Check-in</th><th>Check-out</th><th>Estado</th></tr></thead>
+                <tbody id="tablaHuespedes">
+                    <tr><td>Juan Pérez</td><td>101</td><td>01/09/2026</td><td>05/09/2026</td><td><span style="color:green">✅ Hospedado</span></td></tr>
+                    <tr><td>Maria Lopez</td><td>205</td><td>04/09/2026</td><td>08/09/2026</td><td><span style="color:orange">⏳ Próximo</span></td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div id="guestModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Nuevo Huésped</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <form id="guestForm">
-                <div class="form-group">
-                    <label>Número de Documento</label>
-                    <input type="text" id="documentNumber" required placeholder="Ej: 12345678">
-                </div>
-                <div class="form-group">
-                    <label>Nombre Completo</label>
-                    <input type="text" id="fullName" required placeholder="Ej: Juan Pérez">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" placeholder="Ej: juan@email.com">
-                </div>
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="tel" id="phone" placeholder="Ej: +1234567890">
-                </div>
-                <button type="submit" class="submit-btn">Guardar Huésped</button>
-            </form>
-        </div>
-    </div>
-
     <script>
         const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!token) window.location.href = '/login.html';
 
-        if (!token) window.location.href = 'login.html';
-        document.getElementById('userName').textContent = `👤 ${user.name || 'Usuario'}`;
-
-        async function loadGuests() {
-            try {
-                const response = await fetch('/api/guests', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const guests = await response.json();
-                const tbody = document.getElementById('guestsTableBody');
-                
-                if (guests.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="empty-state">
-                                <div class="empty-state-icon">📋</div>
-                                <p>No hay huéspedes registrados</p>
-                                <p style="margin-top: 10px; font-size: 14px;">Haz clic en "+ Nuevo Huésped" para comenzar</p>
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                tbody.innerHTML = guests.map(guest => `
-                    <tr>
-                        <td><strong>${guest.document_number}</strong></td>
-                        <td>${guest.full_name}</td>
-                        <td>${guest.email || '-'}</td>
-                        <td>${guest.phone || '-'}</td>
-                        <td>
-                            <button class="delete-btn" onclick="deleteGuest('${guest.id}')">Eliminar</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (error) {
-                console.error('Error:', error);
-            }
+        // Generar calendario simple
+        const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const hoy = new Date();
+        let html = '';
+        for(let i=0; i<7; i++) {
+            let fecha = new Date(hoy);
+            fecha.setDate(hoy.getDate() + i);
+            html += `<div style="background:#f0f0f0; padding:15px; border-radius:8px; text-align:center;">
+                <strong>${dias[fecha.getDay()]}</strong><br>${fecha.getDate()}/${fecha.getMonth()+1}
+            </div>`;
         }
-
-        function openModal() { document.getElementById('guestModal').style.display = 'block'; }
-        function closeModal() { document.getElementById('guestModal').style.display = 'none'; }
-
-        document.getElementById('guestForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                document_number: document.getElementById('documentNumber').value,
-                full_name: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value
-            };
-
-            try {
-                await fetch('/api/guests', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                closeModal();
-                document.getElementById('guestForm').reset();
-                loadGuests();
-            } catch (error) {
-                alert('Error al crear huésped');
-            }
-        });
-
-        async function deleteGuest(id) {
-            if (!confirm('¿Estás seguro de eliminar este huésped?')) return;
-            
-            try {
-                await fetch(`/api/guests/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                loadGuests();
-            } catch (error) {
-                alert('Error al eliminar huésped');
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
-        }
-
-                loadGuests();
+        document.getElementById('calendario').innerHTML = html;
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            document.querySelector('.theme-toggle').textContent = document.body.classList.contains('dark-mode') ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
         }
-        if (localStorage.getItem('darkMode') === 'true') {
+        if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
-            window.addEventListener('load', () => {
-                const btn = document.querySelector('.theme-toggle');
-                if (btn) btn.textContent = '☀️';
-            });
+            document.querySelector('.theme-toggle').textContent = '☀️ Modo Claro';
         }
-    </script>
+        function cerrarSesion() { if(confirm('¿Cerrar sesión?')) { localStorage.clear(); window.location.href = '/login.html'; } }
     </script>
 </body>
 </html>

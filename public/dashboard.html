@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
@@ -13,48 +14,34 @@
             <a href="dashboard.html" class="active">📊 Dashboard</a>
             <a href="inventory.html" class="menu-inventario">📦 Inventario</a>
             <a href="accounting.html" class="menu-contabilidad">💰 Contabilidad</a>
+            <a href="guests.html" class="menu-huespedes">👥 Huéspedes</a>
+            <a href="billing.html" class="menu-facturacion">💳 Facturación</a>
             <a href="reports.html" class="menu-reportes">📈 Reportes</a>
-            <a href="users.html" class="menu-usuarios">👥 Usuarios</a>
             <button class="theme-toggle" onclick="toggleTheme()">🌙 Modo Oscuro</button>
             <a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a>
         </div>
     </div>
 
     <div class="container">
-        <h2 style="margin-bottom: 25px;">📊 Panel de Control General</h2>
+        <h2 style="margin-bottom: 25px;">📊 Panel de Control Gerencial</h2>
         
         <div class="summary-box">
-            <div class="summary-card">
-                <h3>Productos en Inventario</h3>
-                <div class="amount" id="totalProductos">0</div>
-            </div>
-            <div class="summary-card">
-                <h3>Ingresos Totales</h3>
-                <div class="amount" id="ingresosTotales" style="color:#28a745;">$0.00</div>
-            </div>
-            <div class="summary-card">
-                <h3>Gastos Totales</h3>
-                <div class="amount" id="gastosTotales" style="color:#dc3545;">$0.00</div>
-            </div>
-            <div class="summary-card">
-                <h3>Utilidad Neta</h3>
-                <div class="amount" id="utilidadNeta" style="color:#667eea;">$0.00</div>
-            </div>
+            <div class="summary-card"><h3>Habitaciones Ocupadas</h3><div class="amount" id="ocupacion">0%</div></div>
+            <div class="summary-card"><h3>Huéspedes Activos</h3><div class="amount" id="huespedesActivos">0</div></div>
+            <div class="summary-card"><h3>Ingresos del Mes</h3><div class="amount" id="ingresosMes">$0.00</div></div>
+        </div>
+
+        <div class="card" style="height: 400px;">
+            <h3>📈 Tendencia de Ingresos vs Gastos</h3>
+            <canvas id="graficoFinanciero"></canvas>
         </div>
 
         <div class="card">
-            <h3 style="margin-bottom: 15px;">👋 Información del Usuario</h3>
-            <p>Bienvenido, <strong id="nombreUsuario">-</strong></p>
-            <p>Rol: <strong id="rolUsuario">-</strong></p>
-            <p>Fecha: <strong id="fechaActual">-</strong></p>
-        </div>
-
-        <div class="card">
-            <h3 style="margin-bottom: 15px;">⚡ Accesos Rápidos</h3>
+            <h3>⚡ Accesos Rápidos</h3>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <a href="inventory.html" class="btn btn-primary">📦 Ir a Inventario</a>
-                <a href="accounting.html" class="btn btn-primary">💰 Nueva Transacción</a>
-                <a href="reports.html" class="btn btn-primary">📈 Ver Reportes</a>
+                <a href="guests.html" class="btn btn-primary">👤 Check-in / Check-out</a>
+                <a href="billing.html" class="btn btn-primary">🧾 Nueva Factura</a>
+                <a href="reports.html" class="btn btn-primary">📊 Ver Reportes Detallados</a>
             </div>
         </div>
     </div>
@@ -64,52 +51,43 @@
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = '/login.html';
 
-        // Datos de usuario
-        document.getElementById('nombreUsuario').textContent = userData.name || 'Usuario';
-        document.getElementById('rolUsuario').textContent = userData.role || '-';
-        document.getElementById('fechaActual').textContent = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
         // Permisos
         const role = userData.role;
-        if (role === 'contador') document.querySelectorAll('.menu-inventario, .menu-usuarios').forEach(e => e.style.display='none');
-        if (role === 'recepcionista') document.querySelectorAll('.menu-contabilidad, .menu-reportes, .menu-usuarios').forEach(e => e.style.display='none');
-        if (role === 'gerente') document.querySelectorAll('.menu-usuarios').forEach(e => e.style.display='none');
+        if (role === 'contador') document.querySelectorAll('.menu-inventario, .menu-huespedes').forEach(e => e.style.display='none');
+        if (role === 'recepcionista') document.querySelectorAll('.menu-contabilidad, .menu-reportes').forEach(e => e.style.display='none');
 
-        // Cargar estadísticas reales
         async function cargarStats() {
             try {
-                // Inventario
-                const invResp = await fetch('/api/inventory', { headers: { 'Authorization': 'Bearer ' + token } });
-                const invData = await invResp.json();
-                document.getElementById('totalProductos').textContent = invData.length;
-
-                // Contabilidad
                 const accResp = await fetch('/api/income-statement', { headers: { 'Authorization': 'Bearer ' + token } });
                 const accData = await accResp.json();
-                document.getElementById('ingresosTotales').textContent = '$' + accData.totalIncome.toFixed(2);
-                document.getElementById('gastosTotales').textContent = '$' + accData.totalExpenses.toFixed(2);
-                document.getElementById('utilidadNeta').textContent = '$' + accData.netIncome.toFixed(2);
-            } catch (e) { console.error('Error cargando stats:', e); }
+                document.getElementById('ingresosMes').textContent = '$' + accData.totalIncome.toFixed(2);
+                
+                // Gráfico
+                new Chart(document.getElementById('graficoFinanciero'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ingresos', 'Gastos', 'Utilidad'],
+                        datasets: [{
+                            label: 'Resumen Financiero',
+                            data: [accData.totalIncome, accData.totalExpenses, accData.netIncome],
+                            backgroundColor: ['#28a745', '#dc3545', '#667eea']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            } catch (e) { console.error(e); }
         }
 
-        // Modo Oscuro
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.querySelector('.theme-toggle').textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            document.querySelector('.theme-toggle').textContent = document.body.classList.contains('dark-mode') ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
         }
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
             document.querySelector('.theme-toggle').textContent = '☀️ Modo Claro';
         }
-
-        function cerrarSesion() {
-            if(confirm('¿Cerrar sesión?')) {
-                localStorage.clear();
-                window.location.href = '/login.html';
-            }
-        }
+        function cerrarSesion() { if(confirm('¿Cerrar sesión?')) { localStorage.clear(); window.location.href = '/login.html'; } }
 
         cargarStats();
     </script>
