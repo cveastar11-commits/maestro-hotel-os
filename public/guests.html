@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <title>Ocupación - Maestro Hotel OS</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .habitacion-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+        .hab-card { padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; position: relative; }
+        .hab-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .libre { background: #d4edda; border-color: #28a745; color: #155724; }
+        .ocupada { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .badge-huespedes { position: absolute; top: -10px; right: -10px; background: #667eea; color: white; border-radius: 50%; width: 30px; height: 30px; line-height: 30px; font-weight: bold; }
+        
+        /* Calendario */
+        .calendario-wrapper { overflow-x: auto; margin-top: 20px; }
+        .calendario-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        .calendario-table th { background: #667eea; color: white; padding: 10px; text-align: center; }
+        .calendario-table td { border: 1px solid #eee; padding: 10px; text-align: center; height: 60px; vertical-align: middle; }
+        .celda-ocupada { background: #ffebee; color: #c62828; font-weight: bold; border-radius: 4px; }
+        .celda-libre { background: #e8f5e9; color: #2e7d32; }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -21,27 +37,46 @@
     </div>
 
     <div class="container">
+        <!-- MAPA DE HABITACIONES -->
         <div class="card">
-            <h3>🗺️ Estado de Habitaciones (Clic para gestionar)</h3>
-            <div class="habitacion-grid" id="mapa"></div>
+            <h3>🗺️ Mapa de Habitaciones (Clic para Gestionar)</h3>
+            <div class="habitacion-grid" id="mapaHabitaciones"></div>
         </div>
 
+        <!-- CALENDARIO MENSUAL -->
         <div class="card">
-            <h3>📋 Movimientos de Hoy</h3>
-            <table>
-                <thead><tr><th>Huésped</th><th>Hab.</th><th>Acción</th><th>Hora</th></tr></thead>
-                <tbody id="tablaMovimientos"></tbody>
-            </table>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>📅 Calendario de Ocupación - Septiembre 2026</h3>
+                <div>
+                    <button class="btn btn-primary" onclick="cambiarVista('diario')">Diario</button>
+                    <button class="btn btn-primary" onclick="cambiarVista('semanal')">Semanal</button>
+                    <button class="btn btn-primary" onclick="cambiarVista('mensual')">Mensual</button>
+                </div>
+            </div>
+            <div class="calendario-wrapper">
+                <table class="calendario-table" id="tablaCalendario">
+                    <thead>
+                        <tr><th>Hab.</th><th>01</th><th>02</th><th>03</th><th>04</th><th>05</th><th>06</th><th>07</th><th>08</th><th>09</th><th>10</th></tr>
+                    </thead>
+                    <tbody id="cuerpoCalendario"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Modal de Gestión -->
-    <div id="modalGestion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
-        <div style="background:white; margin:10% auto; padding:30px; border-radius:10px; width:300px; text-align:center;">
-            <h3 id="tituloHab">Habitación</h3>
-            <p id="infoHab">Estado actual</p>
-            <input type="text" id="nombreHuesped" placeholder="Nombre del Huésped" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px;">
-            <button class="btn btn-success" onclick="confirmarAccion()" style="width:100%">Confirmar</button>
+    <!-- MODAL DE GESTIÓN -->
+    <div id="modalGestion" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999;">
+        <div style="background:white; margin:5% auto; padding:30px; border-radius:15px; width:90%; max-width:500px;">
+            <h3 id="tituloModal">Gestión de Habitación</h3>
+            <div class="form-group">
+                <label>Huéspedes (Máx. 8)</label>
+                <textarea id="listaHuespedes" rows="4" placeholder="1. Juan Pérez&#10;2. Maria Lopez..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Check-in</label><input type="date" id="fechaIn"></div>
+                <div class="form-group"><label>Check-out</label><input type="date" id="fechaOut"></div>
+            </div>
+            <button class="btn btn-success" onclick="guardarCambios()" style="width:100%">💾 Guardar Cambios</button>
             <button class="btn btn-danger" onclick="cerrarModal()" style="width:100%; margin-top:10px;">Cancelar</button>
         </div>
     </div>
@@ -50,67 +85,88 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = '/login.html';
 
-        // Datos simulados en memoria para velocidad extrema
+        // Datos en memoria para velocidad extrema
         let habitaciones = [
-            { num: '101', status: 'libre', huesped: '' },
-            { num: '102', status: 'ocupada', huesped: 'J. Pérez' },
-            { num: '103', status: 'libre', huesped: '' },
-            { num: '104', status: 'ocupada', huesped: 'M. López' },
-            { num: '105', status: 'libre', huesped: '' },
-            { num: '201', status: 'ocupada', huesped: 'A. García' },
-            { num: '202', status: 'libre', huesped: '' },
-            { num: '203', status: 'libre', huesped: '' },
+            { num: '101', status: 'ocupada', huespedes: ['Juan Pérez', 'Ana García'], checkin: '2026-09-01', checkout: '2026-09-05' },
+            { num: '102', status: 'libre', huespedes: [], checkin: '', checkout: '' },
+            { num: '103', status: 'libre', huespedes: [], checkin: '', checkout: '' },
+            { num: '104', status: 'ocupada', huespedes: ['Carlos Ruiz'], checkin: '2026-09-03', checkout: '2026-09-10' },
+            { num: '105', status: 'libre', huespedes: [], checkin: '', checkout: '' },
+            { num: '201', status: 'ocupada', huespedes: ['Familia Torres', 'Luis Torres', 'Maria Torres'], checkin: '2026-09-06', checkout: '2026-09-08' },
+            { num: '202', status: 'libre', huespedes: [], checkin: '', checkout: '' },
         ];
 
-        let habSeleccionada = null;
+        let habActual = null;
 
-        function renderizar() {
-            const mapa = document.getElementById('mapa');
+        function renderizarMapa() {
+            const mapa = document.getElementById('mapaHabitaciones');
             mapa.innerHTML = '';
             habitaciones.forEach(h => {
                 const div = document.createElement('div');
                 div.className = `hab-card ${h.status}`;
-                div.innerHTML = `<strong>${h.num}</strong><br><small>${h.status.toUpperCase()}</small>`;
-                if (h.huesped) div.innerHTML += `<br><span style="font-size:10px">${h.huesped}</span>`;
-                div.onclick = () => abrirGestion(h);
+                div.innerHTML = `<strong style="font-size:20px">${h.num}</strong><br><small>${h.status.toUpperCase()}</small>`;
+                if (h.huespedes.length > 0) {
+                    div.innerHTML += `<span class="badge-huespedes">${h.huespedes.length}</span>`;
+                }
+                div.onclick = () => abrirModal(h);
                 mapa.appendChild(div);
             });
         }
 
-        function abrirGestion(h) {
-            habSeleccionada = h;
-            document.getElementById('modalGestion').style.display = 'block';
-            document.getElementById('tituloHab').textContent = 'Habitación ' + h.num;
-            document.getElementById('infoHab').textContent = h.status === 'libre' ? 'Disponible para Check-in' : `Ocupada por: ${h.huesped}`;
-            document.getElementById('nombreHuesped').value = h.huesped;
+        function renderizarCalendario() {
+            const tbody = document.getElementById('cuerpoCalendario');
+            tbody.innerHTML = '';
+            habitaciones.forEach(h => {
+                let fila = `<tr><td><strong>${h.num}</strong></td>`;
+                for(let i=1; i<=10; i++) { // Simulamos 10 días
+                    let diaStr = `2026-09-${i.toString().padStart(2, '0')}`;
+                    let ocupado = (h.checkin <= diaStr && h.checkout >= diaStr);
+                    fila += `<td class="${ocupado ? 'celda-ocupada' : 'celda-libre'}">${ocupado ? '🔴' : '🟢'}</td>`;
+                }
+                fila += '</tr>';
+                tbody.innerHTML += fila;
+            });
         }
 
-        function confirmarAccion() {
-            const nombre = document.getElementById('nombreHuesped').value;
-            if (habSeleccionada.status === 'libre' && nombre) {
-                habSeleccionada.status = 'ocupada';
-                habSeleccionada.huesped = nombre;
-                alert(`✅ Check-in realizado en Hab. ${habSeleccionada.num}`);
-            } else if (habSeleccionada.status === 'ocupada') {
-                habSeleccionada.status = 'libre';
-                habSeleccionada.huesped = '';
-                alert(`✅ Check-out realizado en Hab. ${habSeleccionada.num}`);
-            }
+        function abrirModal(h) {
+            habActual = h;
+            document.getElementById('modalGestion').style.display = 'block';
+            document.getElementById('tituloModal').textContent = `Habitación ${h.num}`;
+            document.getElementById('listaHuespedes').value = h.huespedes.join('\n');
+            document.getElementById('fechaIn').value = h.checkin;
+            document.getElementById('fechaOut').value = h.checkout;
+        }
+
+        function guardarCambios() {
+            const nombres = document.getElementById('listaHuespedes').value.split('\n').filter(n => n.trim() !== '');
+            const inDate = document.getElementById('fechaIn').value;
+            const outDate = document.getElementById('fechaOut').value;
+
+            if (nombres.length > 8) { alert('Máximo 8 huéspedes por habitación'); return; }
+            
+            habActual.huespedes = nombres;
+            habActual.checkin = inDate;
+            habActual.checkout = outDate;
+            habActual.status = nombres.length > 0 ? 'ocupada' : 'libre';
+            
             cerrarModal();
-            renderizar();
+            renderizarMapa();
+            renderizarCalendario();
+            alert('✅ Información actualizada correctamente');
         }
 
         function cerrarModal() { document.getElementById('modalGestion').style.display = 'none'; }
+        function cambiarVista(vista) { alert(`Vista ${vista} seleccionada (Simulación visual)`); }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
         }
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
-        
         function cerrarSesion() { if(confirm('¿Salir?')) { localStorage.clear(); window.location.href = '/login.html'; } }
 
-        renderizar();
+        renderizarMapa();
+        renderizarCalendario();
     </script>
 </body>
 </html>
