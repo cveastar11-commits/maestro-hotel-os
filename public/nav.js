@@ -4,15 +4,15 @@ if (!token) {
     window.location.href = '/login.html';
 }
 
-// Configuración del menú
+// Configuración del menú con botón de regreso integrado
 const menuItems = [
-    { name: 'Inicio', url: 'index.html', icon: '🏠' }, // NUEVO: Volver al Hub
-    { name: 'Front Desk', url: 'guests.html', icon: '👥' },
-    { name: 'Habitaciones', url: 'rooms.html', icon: '🛏️' },
-    { name: 'Inventario', url: 'inventory.html', icon: '📦' },
-    { name: 'Contabilidad', url: 'accounting.html', icon: '💰' },
-    { name: 'Facturación', url: 'billing.html', icon: '💳' },
-    { name: 'Reportes', url: 'reports.html', icon: '📈' }
+    { name: '🏠 Inicio', url: 'index.html' }, // Botón de Regreso Principal
+    { name: 'Front Desk', url: 'guests.html' },
+    { name: 'Habitaciones', url: 'rooms.html' },
+    { name: 'Inventario', url: 'inventory.html' },
+    { name: 'Contabilidad', url: 'accounting.html' },
+    { name: 'Facturación', url: 'billing.html' },
+    { name: 'Reportes', url: 'reports.html' }
 ];
 
 function renderNav(activePage) {
@@ -20,19 +20,20 @@ function renderNav(activePage) {
     if (!navContainer) return;
 
     let html = '';
-    const menuItems = [
-    { name: 'Inicio', url: 'index.html', icon: '🏠' }, // NUEVO: Volver al Hub
-    { name: 'Front Desk', url: 'guests.html', icon: '👥' },
-    { name: 'Habitaciones', url: 'rooms.html', icon: '🛏️' },
-    { name: 'Inventario', url: 'inventory.html', icon: '📦' },
-    { name: 'Contabilidad', url: 'accounting.html', icon: '💰' },
-    { name: 'Facturación', url: 'billing.html', icon: '💳' },
-    { name: 'Reportes', url: 'reports.html', icon: '📈' }
-];.forEach(item => {
+    
+    // 1. Botón de Regreso Destacado (Si no estamos ya en Inicio)
+    if (activePage !== 'index.html' && activePage !== 'login.html') {
+        html += `<a href="index.html" style="background:rgba(255,255,255,0.2); margin-right:10px;">⬅️ Regresar</a>`;
+    }
+
+    // 2. Resto del menú
+    menuItems.forEach(item => {
+        if (item.url === 'index.html') return; // Ya pusimos el inicio arriba como "Regresar"
         const isActive = item.url === activePage ? 'active' : '';
-        html += `<a href="${item.url}" class="${isActive}">${item.icon} ${item.name}</a>`;
+        html += `<a href="${item.url}" class="${isActive}">${item.name}</a>`;
     });
     
+    // 3. Utilidades
     html += `
         <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
         <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
