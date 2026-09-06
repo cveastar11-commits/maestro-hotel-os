@@ -1,7 +1,13 @@
-// Configuración centralizada del menú
+// Verificación de seguridad global
+const token = localStorage.getItem('token');
+if (!token) {
+    window.location.href = '/login.html';
+}
+
+// Configuración del menú
 const menuItems = [
     { name: 'Dashboard', url: 'dashboard.html', icon: '📊' },
-    { name: 'Ocupación', url: 'guests.html', icon: '👥' },
+    { name: 'Front Desk', url: 'guests.html', icon: '👥' },
     { name: 'Habitaciones', url: 'rooms.html', icon: '🛏️' },
     { name: 'Inventario', url: 'inventory.html', icon: '📦' },
     { name: 'Contabilidad', url: 'accounting.html', icon: '💰' },
@@ -10,12 +16,8 @@ const menuItems = [
 ];
 
 function renderNav(activePage) {
-    // Buscamos el contenedor por ID
     const navContainer = document.getElementById('mainNav');
-    if (!navContainer) {
-        console.warn('⚠️ No se encontró el contenedor #mainNav. Agregue <div id="mainNav"></div> en su HTML.');
-        return;
-    }
+    if (!navContainer) return;
 
     let html = '';
     menuItems.forEach(item => {
@@ -23,7 +25,6 @@ function renderNav(activePage) {
         html += `<a href="${item.url}" class="${isActive}">${item.icon} ${item.name}</a>`;
     });
     
-    // Botones fijos al final
     html += `
         <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
         <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
@@ -32,7 +33,6 @@ function renderNav(activePage) {
     navContainer.innerHTML = html;
 }
 
-// Funciones globales de utilidad
 function toggleTheme() {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
@@ -43,8 +43,7 @@ function toggleTheme() {
 if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
 
 function cerrarSesion() { 
-    if(confirm('¿Está seguro de cerrar sesión?')) { 
-        localStorage.clear(); 
-        window.location.href = '/login.html'; 
-    } 
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login.html';
 }
